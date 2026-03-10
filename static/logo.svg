@@ -1,0 +1,16 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logo-grad" x1="0" y1="0" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5263" />
+      <stop offset="100%" stop-color="#D62851" />
+    </linearGradient>
+  </defs>
+  
+  <g transform="translate(100, 100)">
+    <!-- Exact B shape from the image -->
+    <path d="M0 0V200H120C165 200 190 175 190 145C190 128 185 115 170 108C185 102 195 85 195 60C195 25 165 0 120 0H0ZM45 35H120C135 35 150 42 150 60C150 78 135 85 120 85H45V35ZM45 120H125C140 120 155 130 155 155C155 180 140 185 125 185H45V120Z" fill="url(#logo-grad)" />
+    
+    <!-- Exact W shape interlocking with B -->
+    <path d="M165 65L200 200C205 215 225 215 230 200L260 110L290 200C295 215 315 215 320 200L355 65H305L295 155L275 65H235L215 155L205 65H165Z" fill="url(#logo-grad)" />
+  </g>
+</svg>

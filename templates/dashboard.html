@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — BudgetWise</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <div class="dashboard-bg-shapes">
+        <div class="shape shape-dash-1"></div>
+        <div class="shape shape-dash-2"></div>
+        <div class="shape shape-dash-3"></div>
+    </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.svg') }}" alt="BudgetWise" width="32" height="32"
+                style="border-radius:6px;">
+            <span>BudgetWise</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-section="overview"><span class="nav-icon">📊</span>Overview</a>
+            <a href="#" class="nav-item" data-section="transactions"><span class="nav-icon">💳</span>Transactions</a>
+            <a href="#" class="nav-item" data-section="budgets"><span class="nav-icon">📋</span>Budgets</a>
+            <a href="#" class="nav-item" data-section="goals"><span class="nav-icon">🎯</span>Goals</a>
+            <a href="#" class="nav-item" data-section="forecast"><span class="nav-icon">🔮</span>Forecast</a>
+            <a href="#" class="nav-item" data-section="ai-chat"><span class="nav-icon">🤖</span>AI Assistant</a>
+            <a href="#" class="nav-item" data-section="health"><span class="nav-icon">❤️</span>Health Score</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <a href="#" class="nav-item" data-section="profile"><span class="nav-icon">👤</span>Profile</a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-item"><span class="nav-icon">🚪</span>Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+            <div class="topbar-greeting">
+                <h2>Welcome back, <span class="gradient-text">{{ user.full_name or user.username }}</span></h2>
+                <p>Here's your financial overview</p>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-add" id="addTransactionBtn">+ New Transaction</button>
+            </div>
+        </header>
+
+        <!-- Overview Section -->
+        <section class="dashboard-section active" id="section-overview">
+            <div class="summary-cards">
+                <div class="summary-card sc-income">
+                    <div class="sc-icon">📈</div>
+                    <div class="sc-info">
+                        <div class="sc-label">Total Income</div>
+                        <div class="sc-value" id="totalIncome">₹0</div>
+                    </div>
+                    <span class="sc-badge up" id="incomeBadge">+0%</span>
+                </div>
+                <div class="summary-card sc-expense">
+                    <div class="sc-icon">📉</div>
+                    <div class="sc-info">
+                        <div class="sc-label">Total Expense</div>
+                        <div class="sc-value" id="totalExpense">₹0</div>
+                    </div>
+                    <span class="sc-badge down" id="expenseBadge">-0%</span>
+                </div>
+                <div class="summary-card sc-savings">
+                    <div class="sc-icon">💰</div>
+                    <div class="sc-info">
+                        <div class="sc-label">Savings</div>
+                        <div class="sc-value" id="totalSavings">₹0</div>
+                    </div>
+                    <span class="sc-badge up" id="savingsBadge">+0%</span>
+                </div>
+                <div class="summary-card sc-health">
+                    <div class="sc-icon">❤️</div>
+                    <div class="sc-info">
+                        <div class="sc-label">Health Score</div>
+                        <div class="sc-value" id="healthScore">--</div>
+                    </div>
+                    <span class="sc-badge" id="healthBadge">--</span>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Trends Chart -->
+                <div class="dash-card card-large">
+                    <div class="dc-header">
+                        <h3>Spending Trends</h3>
+                    </div>
+                    <div class="dc-body" id="spendingTrendsChart" style="min-height: 350px;">
+                        <p class="empty-state">Loading charts...</p>
+                    </div>
+                </div>
+
+                <!-- Category Pie Chart with Toggle -->
+                <div class="dash-card">
+                    <div class="dc-header" style="display:flex; align-items:center; justify-content:space-between;">
+                        <h3 id="pieChartTitle">Expense Distribution</h3>
+                        <div class="pie-toggle">
+                            <button class="pt-btn active" id="ptExpense" onclick="switchPieChart('expense')">Expense</button>
+                            <button class="pt-btn" id="ptIncome" onclick="switchPieChart('income')">Income</button>
+                        </div>
+                    </div>
+                    <div class="dc-body" id="categoryDistributionChart" style="min-height: 300px;">
+                        <p class="empty-state">Loading charts...</p>
+                    </div>
+                </div>
+
+                <!-- Heatmap -->
+                <div class="dash-card">
+                    <div class="dc-header">
+                        <h3>Weekly Intensity</h3>
+                    </div>
+                    <div class="dc-body" id="spendingHeatmapChart" style="min-height: 150px;">
+                        <p class="empty-state">Loading heatmap...</p>
+                    </div>
+                </div>
+
+                <!-- Budget vs Actual -->
+                <div class="dash-card card-large">
+                    <div class="dc-header">
+                        <h3>Budget vs Actual</h3>
+                    </div>
+                    <div class="dc-body" id="budgetVsActualChart" style="min-height: 300px;">
+                        <p class="empty-state">Loading budget tracking...</p>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="dash-card card-large">
+                    <div class="dc-header">
+                        <h3>Recent Transactions</h3>
+                    </div>
+                    <div class="dc-body" id="recentTransactions">
+                        <p class="empty-state">No transactions yet</p>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown List (Optional details) -->
+                <div class="dash-card">
+                    <div class="dc-header">
+                        <h3>Category Details</h3>
+                    </div>
+                    <div class="dc-body" id="categoryBreakdown">
+                        <p class="empty-state">Add transactions to see details</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transactions Section -->
+        <section class="dashboard-section" id="section-transactions">
+            <div class="section-top">
+                <h3>All Transactions</h3>
+                <button class="btn-add" onclick="showAddTransaction()">+ Add Transaction</button>
+            </div>
+            <div class="transactions-list" id="transactionsList">
+                <p class="empty-state">No transactions recorded yet. Click "+ Add Transaction" to start tracking.</p>
+            </div>
+        </section>
+
+        <!-- Budgets Section -->
+        <section class="dashboard-section" id="section-budgets">
+            <div class="section-top">
+                <h3>Monthly Budgets</h3>
+                <button class="btn-add" onclick="showAddBudget()">+ Set Budget</button>
+            </div>
+            <div class="budgets-list" id="budgetsList">
+                <p class="empty-state">No budgets set. Create budgets to track your spending limits.</p>
+            </div>
+        </section>
+
+        <!-- Goals Section -->
+        <section class="dashboard-section" id="section-goals">
+            <div class="section-top">
+                <h3>Financial Goals</h3>
+                <button class="btn-add" onclick="showAddGoal()">+ Add Goal</button>
+            </div>
+            <!-- Goals Summary Stats -->
+            <div class="goals-summary" id="goalsSummary">
+                <div class="gs-card">
+                    <div class="gs-icon">💰</div>
+                    <div class="gs-info">
+                        <div class="gs-value" id="gsTotalSaved">₹0</div>
+                        <div class="gs-label">Total Saved</div>
+                    </div>
+                </div>
+                <div class="gs-card">
+                    <div class="gs-icon">🎯</div>
+                    <div class="gs-info">
+                        <div class="gs-value" id="gsActiveGoals">0</div>
+                        <div class="gs-label">Active Goals</div>
+                    </div>
+                </div>
+                <div class="gs-card">
+                    <div class="gs-icon">🏆</div>
+                    <div class="gs-info">
+                        <div class="gs-value" id="gsCompleted">0</div>
+                        <div class="gs-label">Completed</div>
+                    </div>
+                </div>
+                <div class="gs-card">
+                    <div class="gs-icon">📅</div>
+                    <div class="gs-info">
+                        <div class="gs-value" id="gsNearest">—</div>
+                        <div class="gs-label">Nearest Deadline</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Goal Cards Grid -->
+            <div class="goals-grid-list" id="goalsList">
+                <p class="empty-state">No goals set. Create your first savings goal!</p>
+            </div>
+        </section>
+
+        <!-- Forecast Section -->
+        <section class="dashboard-section" id="section-forecast">
+            <div class="section-top">
+                <h3>AI Expense Forecast</h3>
+            </div>
+            <div class="forecast-content" id="forecastContent">
+                <p class="empty-state">Add at least a few months of expense data for AI forecasting.</p>
+            </div>
+        </section>
+
+        <!-- AI Chat Section -->
+        <section class="dashboard-section" id="section-ai-chat">
+            <div class="chat-dashboard">
+                <div class="chat-d-header">
+                    <div class="chat-d-avatar">🤖</div>
+                    <div>
+                        <div class="chat-d-name">BudgetWise AI Assistant</div>
+                        <div class="chat-d-status">Online</div>
+                    </div>
+                </div>
+                <div class="chat-d-messages" id="dashChatMessages">
+                    <div class="chat-d-msg bot">
+                        <div class="d-bubble">Hi {{ user.full_name or user.username }}! I'm your AI financial assistant.
+                            Ask me anything about your expenses, budget, or savings!</div>
+                    </div>
+                </div>
+                <div class="chat-d-input-area">
+                    <input type="text" id="dashChatInput" placeholder="Ask about your finances..." />
+                    <button id="dashChatSend">Send</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Score Section -->
+        <section class="dashboard-section" id="section-health">
+            <div class="health-dashboard" id="healthDashboard">
+                <p class="empty-state">Loading health score...</p>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section class="dashboard-section" id="section-profile">
+            <div class="section-top">
+                <h3>My Profile</h3>
+            </div>
+            <div class="profile-card">
+                <div class="profile-avatar-container">
+                    <div class="profile-photo-wrapper">
+                        {% if user.profile_photo and user.profile_photo != 'default_profile.png' %}
+                        <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_photo) }}"
+                            id="profilePhotoPreview" alt="Profile Photo" class="profile-avatar-img">
+                        {% else %}
+                        <div class="profile-avatar" id="avatarLetter">
+                            {{ (user.full_name or user.username)[0] | upper }}</div>
+                        {% endif %}
+                        <label for="photoUpload" class="photo-edit-btn">✎</label>
+                        <input type="file" id="photoUpload" accept="image/*" style="display:none">
+                    </div>
+                    <div class="profile-info">
+                        <h3>{{ user.full_name or user.username }}</h3>
+                        <p>{{ user.email }}</p>
+                    </div>
+                </div>
+                <form id="profileForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="profileName" value="{{ user.full_name or '' }}"
+                                placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" value="{{ user.email }}" disabled>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="profilePhone" value="{{ user.phone_number or '' }}"
+                                placeholder="+1 234 567 890">
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Currency</label>
+                            <select id="profileCurrency">
+                                <option value="INR" {% if user.currency=='INR' %}selected{% endif %}>INR (₹)</option>
+                                <option value="USD" {% if user.currency=='USD' %}selected{% endif %}>USD ($)</option>
+                                <option value="EUR" {% if user.currency=='EUR' %}selected{% endif %}>EUR (€)</option>
+                                <option value="GBP" {% if user.currency=='GBP' %}selected{% endif %}>GBP (£)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="profileCity" value="{{ user.city or '' }}" placeholder="e.g. Mumbai">
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <input type="text" id="profileCountry" value="{{ user.country or '' }}"
+                                placeholder="e.g. India">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-profile-submit">Save Changes</button>
+                    <p id="profileMsg" style="text-align:center;margin-top:12px;font-size:0.85rem;display:none;"></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal-overlay" id="transactionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Transaction</h3><button class="modal-close"
+                    onclick="closeModal('transactionModal')">&times;</button>
+            </div>
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="transaction_type" id="txType">
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Amount (₹)</label><input type="number" name="amount" id="txAmount"
+                        required placeholder="0.00" step="0.01"></div>
+                <div class="form-group"><label>Description</label><input type="text" name="description" id="txDesc"
+                        placeholder="e.g., Lunch at restaurant"></div>
+                <div class="form-group"><label>Category</label><select name="category_id" id="txCategory">
+                        <option value="">Auto-detect (AI)</option>
+                    </select></div>
+                <div class="form-group"><label>Date</label><input type="date" name="date" id="txDate"></div>
+                <button type="submit" class="btn-submit">Add Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Budget Modal -->
+    <div class="modal-overlay" id="budgetModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Set Budget</h3><button class="modal-close" onclick="closeModal('budgetModal')">&times;</button>
+            </div>
+            <form id="budgetForm">
+                <div class="form-group"><label>Category</label><select name="category_id" id="budgetCategory"></select>
+                </div>
+                <div class="form-group"><label>Amount (₹)</label><input type="number" name="amount" id="budgetAmount"
+                        required placeholder="10000"></div>
+                <button type="submit" class="btn-submit">Set Budget</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div class="modal-overlay" id="goalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="goalModalTitle">Add Goal</h3><button class="modal-close"
+                    onclick="closeModal('goalModal')">&times;</button>
+            </div>
+            <form id="goalForm">
+                <input type="hidden" id="goalEditId" value="">
+                <div class="form-group">
+                    <label>Choose Icon</label>
+                    <div class="icon-picker" id="goalIconPicker">
+                        <div class="ip-btn selected" data-icon="🎯">🎯</div>
+                        <div class="ip-btn" data-icon="🏠">🏠</div>
+                        <div class="ip-btn" data-icon="🚗">🚗</div>
+                        <div class="ip-btn" data-icon="🎓">🎓</div>
+                        <div class="ip-btn" data-icon="✈️">✈️</div>
+                        <div class="ip-btn" data-icon="🛡️">🛡️</div>
+                        <div class="ip-btn" data-icon="💍">💍</div>
+                        <div class="ip-btn" data-icon="📱">📱</div>
+                        <div class="ip-btn" data-icon="💻">💻</div>
+                        <div class="ip-btn" data-icon="🏋️">🏋️</div>
+                        <div class="ip-btn" data-icon="🎵">🎵</div>
+                        <div class="ip-btn" data-icon="🎮">🎮</div>
+                    </div>
+                </div>
+                <div class="form-group"><label>Goal Name</label><input type="text" name="name" id="goalName" required
+                        placeholder="e.g., Emergency Fund"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Target Amount (₹)</label><input type="number" name="target_amount"
+                            id="goalTarget" required placeholder="100000"></div>
+                    <div class="form-group"><label>Current Amount (₹)</label><input type="number" name="current_amount"
+                            id="goalCurrent" value="0"></div>
+                </div>
+                <div class="form-group"><label>Deadline</label><input type="date" name="deadline" id="goalDeadline">
+                </div>
+                <button type="submit" class="btn-submit" id="goalSubmitBtn">Create Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Deposit Modal -->
+    <div class="modal-overlay" id="depositModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>💰 Quick Deposit</h3><button class="modal-close"
+                    onclick="closeModal('depositModal')">&times;</button>
+            </div>
+            <form id="depositForm">
+                <input type="hidden" id="depositGoalId" value="">
+                <div class="form-group">
+                    <label>Goal: <strong id="depositGoalName"></strong></label>
+                </div>
+                <div class="deposit-quick-btns">
+                    <button type="button" class="dq-btn" onclick="setDeposit(500)">₹500</button>
+                    <button type="button" class="dq-btn" onclick="setDeposit(1000)">₹1,000</button>
+                    <button type="button" class="dq-btn" onclick="setDeposit(2000)">₹2,000</button>
+                    <button type="button" class="dq-btn" onclick="setDeposit(5000)">₹5,000</button>
+                </div>
+                <div class="form-group"><label>Custom Amount (₹)</label><input type="number" id="depositAmount" required
+                        placeholder="Enter amount" min="1"></div>
+                <button type="submit" class="btn-submit">Deposit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <h4>🍪 Cookie Consent</h4>
+            <p>We use cookies to enhance your experience, manage sessions, and analyze our traffic. By clicking "Accept
+                All", you consent to our use of cookies according to our <a href="/cookies">Cookie Policy</a>.</p>
+        </div>
+        <div class="cookie-btns">
+            <button class="btn-cookie-settings" onclick="location.href='/cookies'">Settings</button>
+            <button class="btn-cookie-accept" onclick="acceptCookies()">Accept All</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+
+</html>

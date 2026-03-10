@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgetWise — AI-Based Expense Forecasting Tool</title>
+    <meta name="description"
+        content="Track spending, predict future expenses, optimize budgets, and talk to your AI financial assistant. BudgetWise uses AI-powered forecasting for smarter budgeting.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <div class="logo-icon">
+                    <img src="{{ url_for('static', filename='logo.svg') }}" alt="BudgetWise" width="36" height="36"
+                        style="border-radius:8px;">
+                </div>
+                <span>BudgetWise</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#features">Features</a>
+                <a href="#ai-assistant">AI Assistant</a>
+                <a href="#forecasting">Analytics</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#use-cases">Use Cases</a>
+            </div>
+            <div class="nav-actions">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-ghost">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Get Started</a>
+            </div>
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 1. Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        <div class="container hero-grid">
+            <div class="hero-content reveal">
+                <div class="hero-badge">🚀 AI-Powered Finance Platform</div>
+                <h1>AI-Powered Expense Forecasting & <span class="gradient-text">Smart Budgeting</span></h1>
+                <p class="hero-sub">Track spending, predict future expenses, optimize budgets, and talk to your AI
+                    financial assistant — all in one intelligent platform.</p>
+                <div class="hero-cta">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Get Started Free</a>
+                    <button class="btn btn-outline btn-lg" onclick="openChat()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                        </svg>
+                        Try AI Assistant
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat"><span class="stat-num" data-target="50000">0</span><span class="stat-label">Active
+                            Users</span></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat"><span class="stat-num" data-target="2000000">0</span><span
+                            class="stat-label">Expenses Tracked</span></div>
+                    <div class="stat-divider"></div>
+                    <div class="stat"><span class="stat-num" data-target="95">0</span><span class="stat-label">%
+                            Forecast Accuracy</span></div>
+                </div>
+            </div>
+            <div class="hero-visual reveal reveal-right">
+                <div class="dashboard-mockup">
+                    <div class="mockup-header">
+                        <div class="mockup-dots"><span></span><span></span><span></span></div>
+                        <span class="mockup-title">BudgetWise Dashboard</span>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mini-cards">
+                            <div class="mini-card mc-income">
+                                <div class="mc-label">Total Income</div>
+                                <div class="mc-value">₹78,000</div><span class="mc-badge up">+1.78%</span>
+                            </div>
+                            <div class="mini-card mc-expense">
+                                <div class="mc-label">Total Expense</div>
+                                <div class="mc-value">₹43,000</div><span class="mc-badge down">-1.78%</span>
+                            </div>
+                            <div class="mini-card mc-savings">
+                                <div class="mc-label">Total Savings</div>
+                                <div class="mc-value">₹35,000</div><span class="mc-badge up">+3.2%</span>
+                            </div>
+                        </div>
+                        <div class="mini-chart" id="heroChart"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Features Section -->
+    <section class="section features" id="features">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Features</span>
+                <h2>Everything You Need for <span class="gradient-text">Smart Finance</span></h2>
+                <p>Powerful AI-driven tools to track, analyze, forecast, and optimize your finances.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#57F2D1">📊</div>
+                    <h3>Expense Tracking & Auto Categorization</h3>
+                    <p>Automatically categorize every transaction using AI-powered NLP classification.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#3DD4B5">🔮</div>
+                    <h3>AI Expense Forecasting</h3>
+                    <p>Predict future expenses with Prophet-based time-series models and seasonal analysis.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#f093fb">📋</div>
+                    <h3>Smart Budget Planning</h3>
+                    <p>Create dynamic budgets with AI recommendations that adapt to your spending patterns.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#4facfe">📈</div>
+                    <h3>Spending Analytics Dashboard</h3>
+                    <p>Interactive Plotly-powered dashboards with real-time spending insights and trends.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#FFB142">🎯</div>
+                    <h3>Savings & Goal Tracking</h3>
+                    <p>Set financial goals, track progress, and get AI-driven savings recommendations.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#fa709a">❤️</div>
+                    <h3>Financial Health Score</h3>
+                    <p>Get a comprehensive score based on spending ratio, savings rate, and budget adherence.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#fee140">🔔</div>
+                    <h3>Smart Alerts & Insights</h3>
+                    <p>Receive proactive alerts about overspending, anomalies, and optimization opportunities.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon" style="--accent:#a18cd1">💬</div>
+                    <h3>AI Financial Chatbot</h3>
+                    <p>Have natural conversations about your finances with our NLP-powered AI assistant.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- 3. AI Chat Agent Section -->
+    <section class="section ai-section" id="ai-assistant">
+        <div class="container">
+            <div class="ai-grid">
+                <div class="ai-content reveal">
+                    <span class="section-badge">AI Assistant</span>
+                    <h2>Conversational <span class="gradient-text">Personal Finance</span></h2>
+                    <p>Have natural conversations with our AI about your spending habits, budget alerts, and savings
+                        goals. Get instant insights without digging through charts.</p>
+                    <ul class="ai-features-list">
+                        <li><span class="check">✓</span> Real-time expense querying</li>
+                        <li><span class="check">✓</span> Budget feasibility analysis</li>
+                        <li><span class="check">✓</span> personalized saving tips</li>
+                        <li><span class="check">✓</span> Automated debt planning</li>
+                    </ul>
+                </div>
+                <div class="ai-visual reveal reveal-right">
+                    <div class="chat-window">
+                        <div class="chat-header">
+                            <div class="chat-avatar">🤖</div>
+                            <div>
+                                <div class="chat-name">BudgetWise AI</div>
+                                <div class="chat-status">Online • Always here to help</div>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-msg bot">
+                                <div class="msg-bubble">Hello! I'm your BudgetWise AI assistant. How can I help you with
+                                    your finances today?</div>
+                            </div>
+                        </div>
+                        <div class="chat-suggestions">
+                            <button class="suggestion-btn" onclick="askAI(this)">How much did I spend?</button>
+                            <button class="suggestion-btn" onclick="askAI(this)">Can I afford a phone?</button>
+                            <button class="suggestion-btn" onclick="askAI(this)">Show my savings</button>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything...">
+                            <button class="chat-send" onclick="sendChatMessage()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
+                                    stroke-width="2.5">
+                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Financial Insights Section -->
+    <section class="section" id="insights">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Financial Insights</span>
+                <h2>Why Smart <span class="gradient-text">Money Management</span> Matters</h2>
+                <p>Understanding your finances is the first step toward building wealth and achieving freedom.</p>
+            </div>
+            <div class="insights-grid">
+                <div class="insight-card reveal">
+                    <div class="insight-stat">78%</div>
+                    <div class="insight-title">Live Paycheck to Paycheck</div>
+                    <p>Most people don't track their spending. BudgetWise helps you break the cycle with real-time
+                        expense tracking.</p>
+                </div>
+                <div class="insight-card reveal">
+                    <div class="insight-stat accent-orange">3x</div>
+                    <div class="insight-title">More Savings with Budgeting</div>
+                    <p>People who actively budget save 3 times more than those who don't. Start your budgeting journey
+                        today.</p>
+                </div>
+                <div class="insight-card reveal">
+                    <div class="insight-stat accent-yellow">₹2.4L</div>
+                    <div class="insight-title">Average Annual Waste</div>
+                    <p>Indians waste lakhs yearly on untracked subscriptions, impulse buys, and unnecessary fees. We
+                        help you find them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Smart Money Tips Section -->
+    <section class="section" id="money-tips">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Smart Money Tips</span>
+                <h2>Build Better <span class="gradient-text">Financial Habits</span></h2>
+                <p>Follow these proven strategies to take control of your money and grow your wealth steadily.</p>
+            </div>
+            <div class="tips-grid">
+                <div class="tip-card reveal">
+                    <div class="tip-icon">💡</div>
+                    <h4 class="tip-title">50/30/20 Rule</h4>
+                    <p>Allocate 50% of income to
+                        needs, 30% to wants, and 20% to savings. It's the golden rule of personal finance.</p>
+                </div>
+                <div class="tip-card reveal">
+                    <div class="tip-icon">🏦</div>
+                    <h4 class="tip-title">Emergency Fund First</h4>
+                    <p>Build 3-6 months of living
+                        expenses as an emergency fund before investing. It's your financial safety net.</p>
+                </div>
+                <div class="tip-card reveal">
+                    <div class="tip-icon">📉</div>
+                    <h4 class="tip-title">Beat Lifestyle Inflation</h4>
+                    <p>When your income grows,
+                        keep your spending steady. Invest the difference and let compound interest work for you.</p>
+                </div>
+                <div class="tip-card reveal">
+                    <div class="tip-icon">🎯</div>
+                    <h4 class="tip-title">Set SMART Goals</h4>
+                    <p>Make your financial goals
+                        Specific, Measurable, Achievable, Relevant, and Time-bound for maximum success.</p>
+                </div>
+                <div class="tip-card reveal">
+                    <div class="tip-icon">🔄</div>
+                    <h4 class="tip-title">Automate Savings</h4>
+                    <p>Set up automatic transfers
+                        to savings on payday. What you don't see, you won't spend. Pay yourself first.</p>
+                </div>
+                <div class="tip-card reveal">
+                    <div class="tip-icon">📊</div>
+                    <h4 class="tip-title">Review Monthly</h4>
+                    <p>Spend 30 minutes each
+                        month reviewing your finances. Track progress, adjust budgets, and celebrate wins.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- 6. Forecasting & Analytics -->
+    <section class="section forecasting-section" id="forecasting">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Analytics & Forecasting</span>
+                <h2>Predict Your Financial Future with <span class="gradient-text">AI Intelligence</span></h2>
+                <p>Advanced Prophet-based time-series models analyze your spending patterns, detect seasonal trends, and
+                    forecast future expenses with up to 95% accuracy.</p>
+            </div>
+            <div class="analytics-grid">
+                <div class="chart-card chart-large reveal">
+                    <div class="chart-card-header">
+                        <h4>Monthly Spending Trends</h4>
+                        <div class="chart-legend"><span class="legend-dot" style="background:#57F2D1"></span>Actual
+                            <span class="legend-dot" style="background:#FFB142"></span>Forecast
+                        </div>
+                    </div>
+                    <div class="chart-area" id="trendChart"><canvas id="trendCanvas"></canvas></div>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-card-header">
+                        <h4>Weekly Spending Heatmap</h4>
+                    </div>
+                    <div style="padding:10px 0;">
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center;">
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Mon</span>
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Tue</span>
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Wed</span>
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Thu</span>
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Fri</span>
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Sat</span>
+                            <span style="font-size:0.72rem;color:#666;font-weight:600;">Sun</span>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.15);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.30);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.10);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.50);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.70);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.90);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.40);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.20);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.35);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.25);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.45);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.60);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.85);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.55);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.10);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.40);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.20);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.55);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.75);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.95);border-radius:8px;"></div>
+                            <div style="aspect-ratio:1;background:rgba(87,242,209,0.65);border-radius:8px;"></div>
+                        </div>
+                        <div
+                            style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:12px;font-size:0.72rem;color:#666;">
+                            <span>Less</span>
+                            <div style="width:14px;height:14px;background:rgba(87,242,209,0.1);border-radius:3px;">
+                            </div>
+                            <div style="width:14px;height:14px;background:rgba(87,242,209,0.4);border-radius:3px;">
+                            </div>
+                            <div style="width:14px;height:14px;background:rgba(87,242,209,0.7);border-radius:3px;">
+                            </div>
+                            <div style="width:14px;height:14px;background:rgba(87,242,209,1);border-radius:3px;"></div>
+                            <span>More</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-card-header">
+                        <h4>Budget vs Actual</h4>
+                    </div>
+                    <div class="budget-bars" id="budgetBars">
+                        <div class="budget-bar-item">
+                            <div class="bar-label"><span>Food</span><span>₹12,000 / ₹15,000</span></div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="--pct:80%;--color:#57F2D1"></div>
+                            </div>
+                        </div>
+                        <div class="budget-bar-item">
+                            <div class="bar-label"><span>Transport</span><span>₹5,800 / ₹6,000</span></div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="--pct:96%;--color:#fa709a"></div>
+                            </div>
+                        </div>
+                        <div class="budget-bar-item">
+                            <div class="bar-label"><span>Shopping</span><span>₹8,200 / ₹10,000</span></div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="--pct:82%;--color:#FFB142"></div>
+                            </div>
+                        </div>
+                        <div class="budget-bar-item">
+                            <div class="bar-label"><span>Bills</span><span>₹7,500 / ₹8,000</span></div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="--pct:94%;--color:#fee140"></div>
+                            </div>
+                        </div>
+                        <div class="budget-bar-item">
+                            <div class="bar-label"><span>Entertainment</span><span>₹3,200 / ₹5,000</span></div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="--pct:64%;--color:#a18cd1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-card-header">
+                        <h4>Predicted End-of-Month</h4>
+                    </div>
+                    <div class="prediction-card">
+                        <div class="pred-amount">₹12,450</div>
+                        <div class="pred-label">Predicted Remaining Balance</div>
+                        <div class="pred-bar">
+                            <div class="pred-fill" style="width:62%"></div>
+                        </div>
+                        <div class="pred-details">
+                            <div><span class="pred-dot safe"></span> On Track</div>
+                            <div>62% of budget remaining</div>
+                        </div>
+                        <div class="pred-insight">💡 Based on your current pace, you'll save ₹4,200 more than last
+                            month.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Smart Budget Planning -->
+    <section class="section budget-section" id="budget">
+        <div class="container">
+            <div class="budget-grid">
+                <div class="budget-visual reveal">
+                    <div class="budget-planner-card">
+                        <div class="bpc-header">
+                            <h4>Monthly Budget Planner</h4><span class="bpc-month">February 2026</span>
+                        </div>
+                        <div class="bpc-total">
+                            <div class="bpc-label">Total Budget</div>
+                            <div class="bpc-amount">₹65,000</div>
+                            <div class="bpc-spent">₹36,700 spent (56%)</div>
+                        </div>
+                        <div class="bpc-categories">
+                            <div class="bpc-cat">
+                                <div class="bpc-cat-info"><span class="bpc-cat-dot"
+                                        style="background:#57F2D1"></span><span>Housing</span></div>
+                                <div class="bpc-cat-bar">
+                                    <div class="bpc-cat-fill" style="width:75%;background:#57F2D1"></div>
+                                </div><span class="bpc-cat-pct">75%</span>
+                            </div>
+                            <div class="bpc-cat">
+                                <div class="bpc-cat-info"><span class="bpc-cat-dot"
+                                        style="background:#FFB142"></span><span>Food</span></div>
+                                <div class="bpc-cat-bar">
+                                    <div class="bpc-cat-fill" style="width:60%;background:#FFB142"></div>
+                                </div><span class="bpc-cat-pct">60%</span>
+                            </div>
+                            <div class="bpc-cat">
+                                <div class="bpc-cat-info"><span class="bpc-cat-dot"
+                                        style="background:#fa709a"></span><span>Transport</span></div>
+                                <div class="bpc-cat-bar">
+                                    <div class="bpc-cat-fill" style="width:45%;background:#fa709a"></div>
+                                </div><span class="bpc-cat-pct">45%</span>
+                            </div>
+                            <div class="bpc-cat">
+                                <div class="bpc-cat-info"><span class="bpc-cat-dot"
+                                        style="background:#fee140"></span><span>Shopping</span></div>
+                                <div class="bpc-cat-bar">
+                                    <div class="bpc-cat-fill" style="width:88%;background:#fee140"></div>
+                                </div><span class="bpc-cat-pct warn">88%</span>
+                            </div>
+                        </div>
+                        <div class="bpc-ai-tip">🤖 AI Tip: Reduce dining out by ₹2,000 to stay within food budget.</div>
+                    </div>
+                </div>
+                <div class="budget-content reveal reveal-right">
+                    <span class="section-badge">Budget Planning</span>
+                    <h2>Dynamic Budgets That <span class="gradient-text">Adapt to You</span></h2>
+                    <p>Our AI analyzes your spending history and income to create personalized budget plans that adjust
+                        in real-time.</p>
+                    <div class="budget-features">
+                        <div class="bf-item">
+                            <div class="bf-icon">📊</div>
+                            <div>
+                                <h4>Monthly & Category Budgets</h4>
+                                <p>Set limits per category with AI-recommended allocations</p>
+                            </div>
+                        </div>
+                        <div class="bf-item">
+                            <div class="bf-icon">🧠</div>
+                            <div>
+                                <h4>AI Budget Recommendations</h4>
+                                <p>Get personalized suggestions based on your financial profile</p>
+                            </div>
+                        </div>
+                        <div class="bf-item">
+                            <div class="bf-icon">🔄</div>
+                            <div>
+                                <h4>Dynamic Adjustments</h4>
+                                <p>Budgets auto-adjust when income or spending patterns change</p>
+                            </div>
+                        </div>
+                        <div class="bf-item">
+                            <div class="bf-icon">🚨</div>
+                            <div>
+                                <h4>Overspending Alerts</h4>
+                                <p>Real-time notifications when approaching or exceeding limits</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Savings & Goals -->
+    <section class="section savings-section" id="savings">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Savings Goals</span>
+                <h2>Achieve Your Financial Goals <span class="gradient-text">Faster with AI</span></h2>
+                <p>Set savings targets, track progress, and let AI optimize your path to financial freedom.</p>
+            </div>
+            <div class="goals-grid">
+                <div class="goal-card reveal">
+                    <div class="goal-icon">🏠</div>
+                    <div class="goal-name">Dream House</div>
+                    <div class="goal-progress">
+                        <div class="goal-bar">
+                            <div class="goal-fill" style="width:45%"></div>
+                        </div><span>45%</span>
+                    </div>
+                    <div class="goal-amounts"><span>₹4,50,000</span><span>₹10,00,000</span></div>
+                    <div class="goal-ai">🤖 Save ₹8,500/mo to reach by Dec 2027</div>
+                </div>
+                <div class="goal-card reveal">
+                    <div class="goal-icon">🎓</div>
+                    <div class="goal-name">Education Fund</div>
+                    <div class="goal-progress">
+                        <div class="goal-bar">
+                            <div class="goal-fill" style="width:72%"></div>
+                        </div><span>72%</span>
+                    </div>
+                    <div class="goal-amounts"><span>₹5,40,000</span><span>₹7,50,000</span></div>
+                    <div class="goal-ai">🤖 On track! You'll reach this in 4 months</div>
+                </div>
+                <div class="goal-card reveal">
+                    <div class="goal-icon">🛡️</div>
+                    <div class="goal-name">Emergency Fund</div>
+                    <div class="goal-progress">
+                        <div class="goal-bar">
+                            <div class="goal-fill" style="width:90%"></div>
+                        </div><span>90%</span>
+                    </div>
+                    <div class="goal-amounts"><span>₹2,70,000</span><span>₹3,00,000</span></div>
+                    <div class="goal-ai">🤖 Almost there! ₹30,000 more to go</div>
+                </div>
+                <div class="goal-card reveal">
+                    <div class="goal-icon">✈️</div>
+                    <div class="goal-name">Vacation Fund</div>
+                    <div class="goal-progress">
+                        <div class="goal-bar">
+                            <div class="goal-fill" style="width:30%"></div>
+                        </div><span>30%</span>
+                    </div>
+                    <div class="goal-amounts"><span>₹30,000</span><span>₹1,00,000</span></div>
+                    <div class="goal-ai">🤖 Increase monthly savings by ₹5,000 to reach goal</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. Financial Health Score -->
+    <section class="section health-section" id="health">
+        <div class="container">
+            <div class="health-grid">
+                <div class="health-content reveal">
+                    <span class="section-badge">Financial Health</span>
+                    <h2>Know Your <span class="gradient-text">Financial Health Score</span></h2>
+                    <p>A comprehensive AI-calculated score that measures your overall financial wellness based on
+                        multiple factors.</p>
+                    <div class="health-metrics">
+                        <div class="hm-item">
+                            <div class="hm-label">Spending Ratio</div>
+                            <div class="hm-bar">
+                                <div class="hm-fill" style="width:65%;background:#FFB142"></div>
+                            </div><span class="hm-val good">Good</span>
+                        </div>
+                        <div class="hm-item">
+                            <div class="hm-label">Savings Rate</div>
+                            <div class="hm-bar">
+                                <div class="hm-fill" style="width:78%;background:#57F2D1"></div>
+                            </div><span class="hm-val good">Great</span>
+                        </div>
+                        <div class="hm-item">
+                            <div class="hm-label">Budget Adherence</div>
+                            <div class="hm-bar">
+                                <div class="hm-fill" style="width:85%;background:#3DD4B5"></div>
+                            </div><span class="hm-val good">Excellent</span>
+                        </div>
+                        <div class="hm-item">
+                            <div class="hm-label">Risk Level</div>
+                            <div class="hm-bar">
+                                <div class="hm-fill" style="width:25%;background:#FFB142"></div>
+                            </div><span class="hm-val good">Low</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="health-score-card reveal reveal-right">
+                    <div class="score-ring" id="scoreRing">
+                        <svg viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="85" fill="none" stroke="#e8e8f0" stroke-width="12" />
+                            <circle cx="100" cy="100" r="85" fill="none" stroke="url(#scoreGrad)" stroke-width="12"
+                                stroke-linecap="round" stroke-dasharray="534" stroke-dashoffset="534"
+                                class="score-circle" id="scoreCircle" />
+                            <defs>
+                                <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#57F2D1" />
+                                    <stop offset="100%" stop-color="#FFB142" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="score-value"><span id="scoreNum">0</span><span class="score-max">/100</span></div>
+                    </div>
+                    <div class="score-label">Financial Health Score</div>
+                    <div class="score-status excellent">Excellent</div>
+                    <div class="score-tip">💡 Your finances are in great shape! Consider investing your surplus savings.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. How It Works -->
+    <section class="section how-section" id="how-it-works">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">How It Works</span>
+                <h2>Get Started in <span class="gradient-text">4 Simple Steps</span></h2>
+                <p>From expense entry to AI-powered insights — it's effortless.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card reveal">
+                    <div class="step-num">01</div>
+                    <div class="step-icon">📝</div>
+                    <h3>Connect or Enter Expenses</h3>
+                    <p>Manually add transactions or import from bank statements. Our system auto-categorizes everything.
+                    </p>
+                </div>
+                <div class="step-card reveal">
+                    <div class="step-num">02</div>
+                    <div class="step-icon">🧠</div>
+                    <h3>AI Categorizes & Analyzes</h3>
+                    <p>NLTK-powered NLP automatically categorizes transactions and identifies spending patterns.</p>
+                </div>
+                <div class="step-card reveal">
+                    <div class="step-num">03</div>
+                    <div class="step-icon">📈</div>
+                    <h3>Forecasts Future Spending</h3>
+                    <p>Prophet time-series models predict future expenses, detect seasonal trends, and flag risks.</p>
+                </div>
+                <div class="step-card reveal">
+                    <div class="step-num">04</div>
+                    <div class="step-icon">💬</div>
+                    <h3>Chat with AI for Insights</h3>
+                    <p>Ask your AI assistant anything about your finances and get actionable recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. Technology & AI -->
+    <section class="section tech-section" id="technology">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Technology</span>
+                <h2>Powered by Cutting-Edge <span class="gradient-text">AI & ML</span></h2>
+                <p>Built on robust Python-based tech stack with Flask, Prophet, NLTK, and Plotly.</p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-card reveal">
+                    <div class="tech-icon">🤖</div>
+                    <h4>Prophet Forecasting</h4>
+                    <p>Meta's Prophet for accurate time-series expense predictions with seasonal decomposition.</p>
+                </div>
+                <div class="tech-card reveal">
+                    <div class="tech-icon">🗣️</div>
+                    <h4>NLP Conversational AI</h4>
+                    <p>NLTK-powered natural language processing for intelligent financial conversations.</p>
+                </div>
+                <div class="tech-card reveal">
+                    <div class="tech-icon">📊</div>
+                    <h4>Plotly Analytics</h4>
+                    <p>Interactive, real-time dashboards and visualizations powered by Plotly.</p>
+                </div>
+                <div class="tech-card reveal">
+                    <div class="tech-icon">🔍</div>
+                    <h4>Anomaly Detection</h4>
+                    <p>scikit-learn based anomaly detection flags unusual spending patterns instantly.</p>
+                </div>
+                <div class="tech-card reveal">
+                    <div class="tech-icon">🐍</div>
+                    <h4>Flask Backend</h4>
+                    <p>Robust Flask API with JWT authentication and secure data handling.</p>
+                </div>
+                <div class="tech-card reveal">
+                    <div class="tech-icon">⚙️</div>
+                    <h4>Personalization Engine</h4>
+                    <p>ML-driven engine that learns your habits and personalizes every recommendation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 12. Use Cases -->
+    <section class="section usecases-section" id="use-cases">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Use Cases</span>
+                <h2>Built for <span class="gradient-text">Everyone's Finances</span></h2>
+                <p>Whether you're a student or a business professional, BudgetWise adapts to your needs.</p>
+            </div>
+            <div class="usecases-grid">
+                <div class="usecase-card reveal">
+                    <div class="uc-emoji">🎓</div>
+                    <h4>Students</h4>
+                    <p>Track limited budgets, manage loan repayments, and build smart saving habits early.</p>
+                </div>
+                <div class="usecase-card reveal">
+                    <div class="uc-emoji">💼</div>
+                    <h4>Young Professionals</h4>
+                    <p>Manage salary, investments, and lifestyle expenses with AI-driven insights.</p>
+                </div>
+                <div class="usecase-card reveal">
+                    <div class="uc-emoji">👪</div>
+                    <h4>Families</h4>
+                    <p>Track household spending, plan for children's education, and optimize family budgets.</p>
+                </div>
+                <div class="usecase-card reveal">
+                    <div class="uc-emoji">🎨</div>
+                    <h4>Freelancers</h4>
+                    <p>Handle irregular income, track project expenses, and forecast cash flow gaps.</p>
+                </div>
+                <div class="usecase-card reveal">
+                    <div class="uc-emoji">💰</div>
+                    <h4>Budget-Conscious</h4>
+                    <p>Maximize every rupee with AI alerts, spending limits, and optimization tips.</p>
+                </div>
+                <div class="usecase-card reveal">
+                    <div class="uc-emoji">👨‍💼</div>
+                    <h4>Business Professionals</h4>
+                    <p>Separate personal and business expenses, track tax deductions, and plan strategically.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 13. Testimonials -->
+    <section class="section testimonials-section" id="testimonials">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-badge">Why BudgetWise</span>
+                <h2>What Our Users <span class="gradient-text">Experience</span></h2>
+            </div>
+            <div class="testimonials-carousel" id="testimonialsCarousel">
+                <div class="testimonial-card active">
+                    <div class="t-quote">"BudgetWise completely changed how I understand my money. The AI forecasting
+                        predicted my overspending before it happened!"</div>
+                    <div class="t-author">
+                        <div class="t-avatar">AP</div>
+                        <div>
+                            <div class="t-name">Aarav Patel</div>
+                            <div class="t-role">Software Engineer</div>
+                        </div>
+                    </div>
+                    <div class="t-stars">★★★★★</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="t-quote">"The AI chatbot is like having a financial advisor in my pocket. I saved
+                        ₹15,000 more last quarter just by following its tips."</div>
+                    <div class="t-author">
+                        <div class="t-avatar">PS</div>
+                        <div>
+                            <div class="t-name">Priya Sharma</div>
+                            <div class="t-role">Marketing Manager</div>
+                        </div>
+                    </div>
+                    <div class="t-stars">★★★★★</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="t-quote">"As a freelancer with irregular income, the forecasting feature helps me plan
+                        months ahead. Absolutely essential tool."</div>
+                    <div class="t-author">
+                        <div class="t-avatar">RK</div>
+                        <div>
+                            <div class="t-name">Rahul Kumar</div>
+                            <div class="t-role">Freelance Designer</div>
+                        </div>
+                    </div>
+                    <div class="t-stars">★★★★★</div>
+                </div>
+            </div>
+            <div class="testimonial-dots" id="testimonialDots">
+                <button class="t-dot active" data-idx="0"></button>
+                <button class="t-dot" data-idx="1"></button>
+                <button class="t-dot" data-idx="2"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 14. CTA -->
+    <section class="section cta-section" id="cta">
+        <div class="container">
+            <div class="cta-card reveal">
+                <h2>Start Smarter Budgeting <span class="gradient-text-white">Today</span></h2>
+                <p>Join 50,000+ users who are already forecasting expenses, optimizing budgets, and achieving their
+                    financial goals with AI.</p>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-white btn-lg">Create Account</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-white btn-lg">Try Demo</a>
+                    <button class="btn btn-outline-white btn-lg" onclick="openChat()">💬 Chat with AI</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 15. Footer -->
+    <footer class="footer" id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="nav-logo">
+                        <div class="logo-icon"><img src="{{ url_for('static', filename='logo.svg') }}" alt="BudgetWise"
+                                width="32" height="32" style="border-radius:6px;"></div><span>BudgetWise</span>
+                    </div>
+                    <p>Your smart companion for tracking expenses, setting budgets, and achieving your financial goals —
+                        effortlessly.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4><a href="#features">Features</a><a href="#forecasting">Analytics</a><a
+                        href="#budget">Budget Planning</a><a href="#savings">Savings Goals</a>
+                </div>
+                <div class="footer-links">
+                    <h4>AI Tools</h4><a href="#ai-assistant">AI Assistant</a><a href="#health">Health Score</a><a
+                        href="#technology">Technology</a><a href="#how-it-works">How It Works</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Legal</h4><a href="/privacy">Privacy Policy</a><a href="/terms">Terms &amp; Conditions</a><a
+                        href="/gdpr">GDPR Compliance</a><a href="/cookies">Cookie Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BudgetWise. All rights reserved. Made for smarter money management.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating AI Chat Button -->
+    <button class="floating-chat-btn" id="floatingChatBtn" onclick="openChat()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        </svg>
+    </button>
+
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <h4>🍪 Cookie Consent</h4>
+            <p>We use cookies to enhance your experience, manage sessions, and analyze our traffic. By clicking "Accept
+                All", you consent to our use of cookies according to our <a href="/cookies">Cookie Policy</a>.</p>
+        </div>
+        <div class="cookie-btns">
+            <button class="btn-cookie-settings" onclick="location.href='/cookies'">Settings</button>
+            <button class="btn-cookie-accept" onclick="acceptCookies()">Accept All</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+
+</html>

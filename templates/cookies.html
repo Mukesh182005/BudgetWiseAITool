@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Policy — BudgetWise</title>
+    <link rel="icon" type="image/png" href="/static/logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        @import url('/static/css/variables.css');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.8;
+            background: var(--bg-alt)
+        }
+
+        .legal-header {
+            background: var(--slate-900);
+            color: #fff;
+            padding: 80px 0 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legal-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 2;
+        }
+
+        .legal-header p {
+            opacity: 0.7;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Legal Specific Shapes */
+        .shape-legal-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--shape-primary);
+            top: -100px;
+            right: -100px;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .shape-legal-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--shape-secondary);
+            bottom: -50px;
+            left: 10%;
+            animation: float-reverse 15s ease-in-out infinite;
+        }
+
+        .legal-nav {
+            padding: 18px 0;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100
+        }
+
+        .legal-nav .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .legal-nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legal-nav a:hover {
+            color: var(--primary-dark);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 32px
+        }
+
+        .legal-content {
+            padding: 60px 0 100px;
+            background: white;
+            margin: 40px auto;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+
+        .legal-content h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 40px 0 16px;
+            color: var(--text);
+            border-bottom: 2px solid var(--bg-alt);
+            padding-bottom: 8px;
+        }
+
+        .legal-content p,
+        .legal-content li {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 1rem
+        }
+
+        .legal-content ul {
+            margin: 0 0 20px 24px;
+        }
+
+        .legal-content li {
+            margin-bottom: 8px
+        }
+
+        .cookie-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0 32px;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .cookie-table th {
+            background: var(--bg-alt);
+            color: var(--text);
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .cookie-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary)
+        }
+
+        .cookie-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .cookie-table tr:nth-child(even) {
+            background: #fafafa
+        }
+    </style>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+
+<body>
+    <div class="legal-nav">
+        <div class="container">
+            <a href="/">← Back to BudgetWise</a>
+            <span style="font-size:0.82rem;color:#7A7F84;">Last Updated: February 2026</span>
+        </div>
+    </div>
+    <div class="legal-header">
+        <div class="bg-shapes">
+            <div class="shape shape-legal-1"></div>
+            <div class="shape shape-legal-2"></div>
+        </div>
+        <div class="container">
+            <h1>Cookie Policy</h1>
+            <p>How BudgetWise uses cookies and similar technologies</p>
+        </div>
+    </div>
+    <div class="legal-content">
+        <div class="container">
+            <h2>1. What Are Cookies?</h2>
+            <p>Cookies are small text files stored on your device when you visit a website. They help the website
+                remember your preferences and improve your experience.</p>
+
+            <h2>2. How We Use Cookies</h2>
+            <p>BudgetWise uses cookies for the following purposes:</p>
+
+            <table class="cookie-table">
+                <thead>
+                    <tr>
+                        <th>Cookie Type</th>
+                        <th>Purpose</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Essential</strong></td>
+                        <td>Authentication, security, and session management. Required for the app to function.</td>
+                        <td>Session</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Functional</strong></td>
+                        <td>Remembering your preferences like dashboard layout and currency settings.</td>
+                        <td>1 year</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Analytics</strong></td>
+                        <td>Understanding how users interact with our platform to improve features.</td>
+                        <td>90 days</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Performance</strong></td>
+                        <td>Monitoring page load times and app performance for optimization.</td>
+                        <td>30 days</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>3. Essential Cookies</h2>
+            <p>These cookies are strictly necessary for BudgetWise to operate. They include:</p>
+            <ul>
+                <li><strong>session:</strong> Maintains your login session securely</li>
+                <li><strong>csrf_token:</strong> Protects against cross-site request forgery attacks</li>
+                <li><strong>remember_token:</strong> Enables "Remember Me" functionality</li>
+            </ul>
+            <p>You cannot opt out of essential cookies as they are required for the service to function.</p>
+
+            <h2>4. Managing Cookies</h2>
+            <p>You can control non-essential cookies through your browser settings:</p>
+            <ul>
+                <li><strong>Chrome:</strong> Settings → Privacy and Security → Cookies</li>
+                <li><strong>Firefox:</strong> Settings → Privacy & Security → Cookies</li>
+                <li><strong>Safari:</strong> Preferences → Privacy → Manage Website Data</li>
+                <li><strong>Edge:</strong> Settings → Cookies and Site Permissions</li>
+            </ul>
+            <p>Please note that disabling certain cookies may affect your experience on BudgetWise.</p>
+
+            <h2>5. Third-Party Cookies</h2>
+            <p>BudgetWise does <strong>not</strong> use any third-party advertising or tracking cookies. We do not share
+                cookie data with advertisers.</p>
+
+            <h2>6. Updates to This Policy</h2>
+            <p>We may update this Cookie Policy to reflect changes in our practices or for legal, operational, or
+                regulatory reasons. Check this page periodically for updates.</p>
+
+            <h2>7. Contact</h2>
+            <p>For questions about our use of cookies, contact us at <strong>privacy@budgetwise.app</strong>.</p>
+        </div>
+    </div>
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <h4>🍪 Cookie Consent</h4>
+            <p>We use cookies to enhance your experience, manage sessions, and analyze our traffic. By clicking "Accept
+                All", you consent to our use of cookies according to our <a href="/cookies">Cookie Policy</a>.</p>
+        </div>
+        <div class="cookie-btns">
+            <button class="btn-cookie-settings" onclick="location.href='/cookies'">Settings</button>
+            <button class="btn-cookie-accept" onclick="acceptCookies()">Accept All</button>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>

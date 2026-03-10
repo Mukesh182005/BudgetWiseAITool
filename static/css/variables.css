@@ -1,0 +1,99 @@
+:root {
+    /* Core Brand Colors */
+    --primary: #FF3459;
+    --primary-hover: #E52E50;
+    --primary-soft: rgba(255, 52, 89, 0.1);
+
+    /* Professional Slate Palette */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+
+    /* Intent Colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+
+    /* Theme Tokens */
+    --bg: #ffffff;
+    --bg-alt: var(--slate-50);
+    --bg-card: #ffffff;
+    --text: var(--slate-900);
+    --text-secondary: var(--slate-500);
+    --text-muted: var(--slate-400);
+    --border: var(--slate-200);
+    --border-soft: var(--slate-100);
+
+    /* Effects */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Gradients */
+    --gradient: linear-gradient(135deg, #FF3459 0%, #E52E50 100%);
+    --gradient-soft: linear-gradient(135deg, rgba(255, 52, 89, 0.05) 0%, rgba(229, 46, 80, 0.05) 100%);
+    --gradient-text: linear-gradient(135deg, #FF3459 0%, #D62851 100%);
+    --glass: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.125);
+
+    /* Floating Shapes Colors */
+    --shape-primary: rgba(255, 52, 89, 0.4);
+    --shape-secondary: rgba(255, 107, 129, 0.3);
+    --shape-accent: rgba(0, 182, 122, 0.2);
+    --shape-blue: rgba(59, 130, 246, 0.3);
+    --shape-teal: rgba(20, 184, 166, 0.2);
+    --shape-purple: rgba(168, 85, 247, 0.2);
+    --shape-indigo: rgba(79, 70, 229, 0.2);
+    --shape-silver: rgba(148, 163, 184, 0.15);
+}
+
+/* Global Floating Shapes System */
+.bg-shapes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    will-change: transform;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+
+    50% {
+        transform: translateY(-40px) scale(1.1);
+    }
+}
+
+@keyframes float-reverse {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1.1);
+    }
+
+    50% {
+        transform: translateY(40px) scale(1);
+    }
+}
