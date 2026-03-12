@@ -54,9 +54,9 @@ def categorize_transaction(description):
 def forecast_expenses(user_id, months_ahead=3):
     """
     Forecast future expenses using Prophet if available,
-    falls back to simple moving average.
+    falls back to simple moving average. Includes analysis and insights.
     """
-    from models import db, Transaction
+    from models import db, Transaction, Category
     from sqlalchemy import func, extract
 
     # Get monthly expense totals for past 12 months
@@ -80,6 +80,9 @@ def forecast_expenses(user_id, months_ahead=3):
         })
 
     # Try Prophet forecasting
+    forecasted = []
+    method = 'moving_average'
+    confidence = 'medium'
     try:
         import pandas as pd
         from prophet import Prophet
@@ -92,7 +95,6 @@ def forecast_expenses(user_id, months_ahead=3):
             future = model.make_future_dataframe(periods=months_ahead, freq='MS')
             prediction = model.predict(future)
 
-            forecasted = []
             for _, row in prediction.tail(months_ahead).iterrows():
                 forecasted.append({
                     'month': row['ds'].month,
@@ -101,39 +103,141 @@ def forecast_expenses(user_id, months_ahead=3):
                     'lower': round(max(row['yhat_lower'], 0), 2),
                     'upper': round(max(row['yhat_upper'], 0), 2)
                 })
-
-            return {
-                'method': 'prophet',
-                'historical': [{'month': d['month'], 'year': d['year'], 'total': d['y']} for d in monthly_data],
-                'forecast': forecasted,
-                'confidence': 'high'
-            }
+            method = 'prophet'
+            confidence = 'high'
     except ImportError:
         pass
     except Exception:
         pass
 
     # Fallback: Simple moving average
-    values = [d['y'] for d in monthly_data if d['y'] > 0]
-    avg = sum(values[-3:]) / max(len(values[-3:]), 1) if values else 0
+    if not forecasted:
+        values = [d['y'] for d in monthly_data if d['y'] > 0]
+        avg = sum(values[-3:]) / max(len(values[-3:]), 1) if values else 0
 
-    forecasted = []
-    for i in range(1, months_ahead + 1):
-        future_date = now + timedelta(days=i * 30)
-        forecasted.append({
-            'month': future_date.month,
-            'year': future_date.year,
-            'predicted': round(avg, 2),
-            'lower': round(avg * 0.85, 2),
-            'upper': round(avg * 1.15, 2)
+        for i in range(1, months_ahead + 1):
+            future_date = now + timedelta(days=i * 30)
+            forecasted.append({
+                'month': future_date.month,
+                'year': future_date.year,
+                'predicted': round(avg, 2),
+                'lower': round(avg * 0.85, 2),
+                'upper': round(avg * 1.15, 2)
+            })
+
+    # ===== Build analysis and insights =====
+    active_months = [d for d in monthly_data if d['y'] > 0]
+    active_values = [d['y'] for d in active_months]
+
+    analysis = {}
+    insights = []
+
+    if len(active_values) >= 2:
+        # Trend direction
+        recent = active_values[-1]
+        prev = active_values[-2]
+        change_pct = ((recent - prev) / prev * 100) if prev > 0 else 0
+        if change_pct > 10:
+            trend = 'increasing'
+            trend_icon = '📈'
+        elif change_pct < -10:
+            trend = 'decreasing'
+            trend_icon = '📉'
+        else:
+            trend = 'stable'
+            trend_icon = '➡️'
+
+        analysis['trend'] = trend
+        analysis['trend_icon'] = trend_icon
+        analysis['change_pct'] = round(change_pct, 1)
+        analysis['avg_monthly'] = round(sum(active_values) / len(active_values), 2)
+        analysis['highest_month'] = round(max(active_values), 2)
+        analysis['lowest_month'] = round(min(active_values), 2)
+
+        # Volatility
+        avg = analysis['avg_monthly']
+        variance = sum((v - avg) ** 2 for v in active_values) / len(active_values)
+        std_dev = variance ** 0.5
+        cv = (std_dev / avg * 100) if avg > 0 else 0
+        analysis['volatility'] = 'Low' if cv < 20 else 'Medium' if cv < 40 else 'High'
+        analysis['std_dev'] = round(std_dev, 2)
+
+        # Insights based on analysis
+        if trend == 'increasing':
+            insights.append({
+                'icon': '📈', 'type': 'warning',
+                'title': 'Spending is Rising',
+                'text': f'Your expenses increased by {abs(change_pct):.0f}% compared to last month. Review recent purchases to identify non-essential spending.'
+            })
+        elif trend == 'decreasing':
+            insights.append({
+                'icon': '📉', 'type': 'success',
+                'title': 'Spending is Decreasing',
+                'text': f'Great progress! Expenses dropped by {abs(change_pct):.0f}% — your budget discipline is paying off.'
+            })
+
+        if forecasted and forecasted[0]['predicted'] > analysis['avg_monthly'] * 1.1:
+            insights.append({
+                'icon': '⚠️', 'type': 'warning',
+                'title': 'Higher Spending Expected',
+                'text': f'Next month\'s forecast ({_fmt_inr(forecasted[0]["predicted"])}) is above your average ({_fmt_inr(analysis["avg_monthly"])}). Consider pre-planning your budget.'
+            })
+
+        if analysis['volatility'] == 'High':
+            insights.append({
+                'icon': '🎢', 'type': 'tip',
+                'title': 'Spending is Unpredictable',
+                'text': 'Your monthly expenses vary significantly. Try setting fixed budgets to stabilize cash flow.'
+            })
+
+    # Top spending categories (for recommendations)
+    top_cats = db.session.query(
+        Category.name, Category.icon, func.sum(Transaction.amount).label('total')
+    ).join(Transaction).filter(
+        Transaction.user_id == user_id,
+        Transaction.transaction_type == 'expense',
+        extract('month', Transaction.date) == now.month,
+        extract('year', Transaction.date) == now.year
+    ).group_by(Category.id).order_by(func.sum(Transaction.amount).desc()).limit(3).all()
+
+    recommendations = []
+    if top_cats:
+        top_name = top_cats[0].name
+        top_amt = float(top_cats[0].total)
+        recommendations.append({
+            'icon': '🔍', 'type': 'tip',
+            'title': f'Top Category: {top_name}',
+            'text': f'{top_cats[0].icon} {top_name} accounts for {_fmt_inr(top_amt)} this month. Look for ways to optimize spending here.'
         })
 
+    if forecasted:
+        total_forecast = sum(f['predicted'] for f in forecasted)
+        recommendations.append({
+            'icon': '💰', 'type': 'tip',
+            'title': f'Plan Ahead for Next {months_ahead} Months',
+            'text': f'Expected total spending: {_fmt_inr(total_forecast)}. Set aside this amount to stay stress-free.'
+        })
+
+    recommendations.append({
+        'icon': '📊', 'type': 'tip',
+        'title': 'Track Daily Expenses',
+        'text': 'Logging expenses daily improves forecast accuracy and helps identify spending leaks early.'
+    })
+
     return {
-        'method': 'moving_average',
+        'method': method,
         'historical': [{'month': d['month'], 'year': d['year'], 'total': d['y']} for d in monthly_data],
         'forecast': forecasted,
-        'confidence': 'medium'
+        'confidence': confidence,
+        'analysis': analysis,
+        'insights': insights,
+        'recommendations': recommendations
     }
+
+
+def _fmt_inr(amount):
+    """Format amount as INR with commas."""
+    return f'₹{amount:,.0f}'
 
 
 # ==================== AI CHAT PROCESSOR (OpenAI + Smart Fallback) ====================
@@ -328,7 +432,7 @@ STRICT RULES (YOU MUST FOLLOW THESE):
 # ==================== FINANCIAL HEALTH SCORE ====================
 
 def calculate_health_score(user_id):
-    """Calculate a comprehensive financial health score (0-100)."""
+    """Calculate a comprehensive financial health score (0-100) with detailed breakdown."""
     from models import db, Transaction, Budget, User, FinancialGoal
     from sqlalchemy import func, extract
 
@@ -350,7 +454,6 @@ def calculate_health_score(user_id):
     ).scalar() or 0
 
     # 1. Spending ratio (lower is better) — 30 points
-    # Ideal is < 50%
     spending_ratio = (total_expense / income * 100) if income > 0 else 100
     if spending_ratio <= 50:
         spending_score = 30
@@ -360,7 +463,6 @@ def calculate_health_score(user_id):
         spending_score = 30 * (1 - (spending_ratio - 50) / 50)
 
     # 2. Savings rate — 30 points
-    # Ideal is > 20%
     savings_amount = income - total_expense
     savings_rate = (savings_amount / income * 100) if income > 0 else 0
     if savings_rate >= 20:
@@ -388,13 +490,12 @@ def calculate_health_score(user_id):
                 budget_score += score_per_budget
                 within_count += 1
             else:
-                # Penalty for overspending but proportional
                 penalty = min(score_per_budget, (spent - b.amount) / b.amount * score_per_budget)
                 budget_score += max(0, score_per_budget - penalty)
         adherence = (within_count / len(budgets)) * 100
     else:
         adherence = 0
-        budget_score = 15  # Default "neutral" points for not having budgets
+        budget_score = 15
 
     # 4. Goal progress — 15 points
     goals = FinancialGoal.query.filter_by(user_id=user_id).all()
@@ -404,7 +505,7 @@ def calculate_health_score(user_id):
         goal_score = (avg_progress / 100) * 15
     else:
         avg_progress = 0
-        goal_score = 10  # Default "on track" points if no goals
+        goal_score = 10
 
     total_score = round(spending_score + savings_score + budget_score + goal_score)
     total_score = max(0, min(100, total_score))
@@ -421,6 +522,68 @@ def calculate_health_score(user_id):
     else:
         status, tip = 'Critical', 'Emergency: Your expenses exceed your income. Immediate budget cuts are recommended.'
 
+    # Build actionable recommendations
+    recommendations = []
+    if spending_ratio > 70:
+        recommendations.append({
+            'icon': '🔴', 'type': 'warning',
+            'title': 'High Spending Alert',
+            'text': f'You\'re spending {spending_ratio:.0f}% of your income. Try to keep it below 50% for healthy finances.'
+        })
+    elif spending_ratio <= 50:
+        recommendations.append({
+            'icon': '✅', 'type': 'success',
+            'title': 'Great Spending Control',
+            'text': f'Spending at {spending_ratio:.0f}% of income — well within the healthy range!'
+        })
+
+    if savings_rate < 10:
+        recommendations.append({
+            'icon': '💡', 'type': 'tip',
+            'title': 'Boost Your Savings',
+            'text': f'Your savings rate is only {savings_rate:.0f}%. Aim for at least 20% to build a strong safety net.'
+        })
+    elif savings_rate >= 20:
+        recommendations.append({
+            'icon': '🌟', 'type': 'success',
+            'title': 'Excellent Savings Rate',
+            'text': f'Saving {savings_rate:.0f}% of income — you\'re building wealth consistently!'
+        })
+
+    if not budgets:
+        recommendations.append({
+            'icon': '📋', 'type': 'tip',
+            'title': 'Set Monthly Budgets',
+            'text': 'Create category budgets to track spending limits and improve your score by up to 25 points.'
+        })
+    elif adherence < 80:
+        recommendations.append({
+            'icon': '⚠️', 'type': 'warning',
+            'title': 'Budget Overspending',
+            'text': f'Only {adherence:.0f}% of budgets are on track. Review overspent categories this week.'
+        })
+
+    if not goals:
+        recommendations.append({
+            'icon': '🎯', 'type': 'tip',
+            'title': 'Create Savings Goals',
+            'text': 'Set financial goals to give your savings a purpose and track progress visually.'
+        })
+    elif avg_progress > 75:
+        recommendations.append({
+            'icon': '🏆', 'type': 'success',
+            'title': 'Goals Nearly Complete',
+            'text': f'Average goal progress is {avg_progress:.0f}%! You\'re close to achieving your targets.'
+        })
+
+    # Component rating helper
+    def rate(score, max_score):
+        pct = (score / max_score * 100) if max_score > 0 else 0
+        if pct >= 80: return 'Excellent'
+        if pct >= 60: return 'Good'
+        if pct >= 40: return 'Fair'
+        return 'Needs Work'
+
     return {
         'score': total_score,
         'status': status,
@@ -430,5 +593,18 @@ def calculate_health_score(user_id):
             'savings_rate': round(savings_rate, 1),
             'budget_adherence': round(adherence, 1),
             'risk_level': 'Low' if total_score >= 70 else 'Medium' if total_score >= 40 else 'High'
+        },
+        'components': {
+            'spending': {'score': round(spending_score, 1), 'max': 30, 'rating': rate(spending_score, 30)},
+            'savings': {'score': round(savings_score, 1), 'max': 30, 'rating': rate(savings_score, 30)},
+            'budget': {'score': round(budget_score, 1), 'max': 25, 'rating': rate(budget_score, 25)},
+            'goals': {'score': round(goal_score, 1), 'max': 15, 'rating': rate(goal_score, 15)}
+        },
+        'recommendations': recommendations,
+        'financials': {
+            'income': round(income, 2),
+            'expenses': round(total_expense, 2),
+            'savings': round(savings_amount, 2)
         }
     }
+

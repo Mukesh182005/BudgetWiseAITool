@@ -96,8 +96,14 @@
             <div class="dashboard-grid">
                 <!-- Trends Chart -->
                 <div class="dash-card card-large">
-                    <div class="dc-header">
+                    <div class="dc-header" style="display:flex; align-items:center; justify-content:space-between;">
                         <h3>Spending Trends</h3>
+                        <div class="pie-toggle" id="trendsToggle">
+                            <button class="pt-btn active" data-mode="both" onclick="switchTrendsMode('both')">Both</button>
+                            <button class="pt-btn" data-mode="expense" onclick="switchTrendsMode('expense')">Expense</button>
+                            <button class="pt-btn" data-mode="income" onclick="switchTrendsMode('income')">Income</button>
+                            <button class="pt-btn" data-mode="savings" onclick="switchTrendsMode('savings')">Savings</button>
+                        </div>
                     </div>
                     <div class="dc-body" id="spendingTrendsChart" style="min-height: 350px;">
                         <p class="empty-state">Loading charts...</p>
@@ -119,11 +125,12 @@
                 </div>
 
                 <!-- Heatmap -->
-                <div class="dash-card">
+                <div class="dash-card card-large">
                     <div class="dc-header">
-                        <h3>Weekly Intensity</h3>
+                        <h3>Weekly Spending Intensity</h3>
+                        <p style="font-size:0.78rem;color:#94a3b8;margin-top:4px;">Last 12 weeks — daily spending activity</p>
                     </div>
-                    <div class="dc-body" id="spendingHeatmapChart" style="min-height: 150px;">
+                    <div class="dc-body" id="spendingHeatmapChart" style="min-height: 200px;">
                         <p class="empty-state">Loading heatmap...</p>
                     </div>
                 </div>

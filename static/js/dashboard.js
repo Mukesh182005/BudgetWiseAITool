@@ -1,4 +1,4 @@
-﻿// ===== BudgetWise Dashboard JS =====
+// ===== BudgetWise Dashboard JS =====
 let userCurrency = '₹';
 const currencyMap = { 'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£' };
 
@@ -128,6 +128,9 @@ async function loadDashboardData() {
 }
 
 function renderPlotlyCharts(summary, trends, heatmapData, forecastData) {
+    // Hide all loading placeholders
+    document.querySelectorAll('.dc-body .empty-state').forEach(el => el.style.display = 'none');
+
     const textColor = '#0F172A';
     const gridColor = '#F1F5F9';
     const brandColor = '#FF3459';
@@ -137,81 +140,13 @@ function renderPlotlyCharts(summary, trends, heatmapData, forecastData) {
     window._pieIncomeData = summary.income_breakdown || [];
     renderPieChart('expense');
 
-    // 2. Spending Trends (Line)
-    if (trends && trends.length > 0) {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // 2. Spending Trends — store data globally for toggle
+    window._trendsData = trends;
+    window._forecastData = forecastData;
+    renderTrendsChart('both');
 
-        const actualTrace = {
-            x: trends.map(t => months[t.month - 1] + ' ' + (t.year % 100)),
-            y: trends.map(t => t.total),
-            name: 'Actual',
-            type: 'scatter',
-            mode: 'lines+markers',
-            fill: 'tozeroy',
-            line: { color: brandColor, width: 3, shape: 'spline' },
-            marker: { color: brandColor, size: 8 }
-        };
-
-        const dataPlot = [actualTrace];
-
-        if (forecastData && forecastData.forecast) {
-            const f = forecastData.forecast;
-            const forecastTrace = {
-                x: f.map(t => months[t.month - 1] + ' ' + (t.year % 100)),
-                y: f.map(t => t.predicted),
-                name: 'AI Forecast',
-                type: 'scatter',
-                mode: 'lines+markers',
-                line: { color: '#FFB142', width: 3, dash: 'dot', shape: 'spline' },
-                marker: { color: '#FFB142', size: 8 }
-            };
-            dataPlot.push(forecastTrace);
-        }
-
-        const layout = {
-            height: 300,
-            margin: { t: 30, b: 40, l: 60, r: 20 },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent',
-            font: { color: textColor, family: 'Inter' },
-            showlegend: true,
-            legend: { orientation: 'h', y: 1.1, x: 0.5, xanchor: 'center' },
-            xaxis: { showgrid: false, zeroline: false },
-            yaxis: { gridcolor: gridColor, zeroline: false, tickprefix: userCurrency }
-        };
-        Plotly.newPlot('spendingTrendsChart', dataPlot, layout, { displayModeBar: false });
-    }
-
-    // 3. Spending Heatmap (Day of Week)
-    if (heatmapData) {
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const values = days.map((_, i) => heatmapData[i] || 0);
-
-        const data = [{
-            x: days,
-            y: ['Intensity'],
-            z: [values],
-            type: 'heatmap',
-            colorscale: [
-                [0, '#F1F5F9'],
-                [0.5, '#FF8A9F'],
-                [1, brandColor]
-            ],
-            showscale: false,
-            xgap: 4,
-            ygap: 4
-        }];
-        const layout = {
-            height: 150,
-            margin: { t: 10, b: 30, l: 40, r: 10 },
-            paper_bgcolor: 'transparent',
-            plot_bgcolor: 'transparent',
-            font: { color: textColor, family: 'Inter' },
-            xaxis: { side: 'bottom', showgrid: false },
-            yaxis: { showgrid: false, visible: false }
-        };
-        Plotly.newPlot('spendingHeatmapChart', data, layout, { displayModeBar: false });
-    }
+    // 3. Spending Heatmap (GitHub-style grid)
+    renderHeatmapGrid(heatmapData);
 
     // 4. Budget vs Actual (Grouped Bar)
     if (summary.category_breakdown && summary.category_breakdown.length > 0) {
@@ -246,6 +181,204 @@ function renderPlotlyCharts(summary, trends, heatmapData, forecastData) {
         };
         Plotly.newPlot('budgetVsActualChart', traces, layout, { displayModeBar: false });
     }
+}
+
+// ===== Enhanced Trends Chart with Toggle =====
+function renderTrendsChart(mode) {
+    const trends = window._trendsData;
+    const forecastData = window._forecastData;
+    if (!trends || trends.length === 0) return;
+
+    const textColor = '#0F172A';
+    const gridColor = '#F1F5F9';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const labels = trends.map(t => months[t.month - 1] + ' ' + (t.year % 100));
+
+    const dataPlot = [];
+
+    if (mode === 'expense' || mode === 'both') {
+        dataPlot.push({
+            x: labels,
+            y: trends.map(t => t.total),
+            name: 'Expenses',
+            type: 'scatter',
+            mode: 'lines+markers',
+            fill: 'tozeroy',
+            fillcolor: 'rgba(255, 52, 89, 0.08)',
+            line: { color: '#FF3459', width: 3, shape: 'spline' },
+            marker: { color: '#FF3459', size: 8, line: { color: '#fff', width: 2 } },
+            hovertemplate: '<b>%{x}</b><br>Expense: ' + userCurrency + '%{y:,.0f}<extra></extra>'
+        });
+    }
+
+    if (mode === 'income' || mode === 'both') {
+        dataPlot.push({
+            x: labels,
+            y: trends.map(t => t.income || 0),
+            name: 'Income',
+            type: 'scatter',
+            mode: 'lines+markers',
+            fill: 'tozeroy',
+            fillcolor: 'rgba(22, 163, 74, 0.08)',
+            line: { color: '#16a34a', width: 3, shape: 'spline' },
+            marker: { color: '#16a34a', size: 8, line: { color: '#fff', width: 2 } },
+            hovertemplate: '<b>%{x}</b><br>Income: ' + userCurrency + '%{y:,.0f}<extra></extra>'
+        });
+    }
+
+    if (mode === 'savings') {
+        const savingsValues = trends.map(t => (t.income || 0) - t.total);
+        const savingsColors = savingsValues.map(v => v >= 0 ? '#16a34a' : '#dc2626');
+        dataPlot.push({
+            x: labels,
+            y: savingsValues,
+            name: 'Savings',
+            type: 'bar',
+            marker: { color: savingsColors, line: { color: savingsColors.map(c => c === '#16a34a' ? '#15803d' : '#b91c1c'), width: 1 } },
+            hovertemplate: '<b>%{x}</b><br>Savings: ' + userCurrency + '%{y:,.0f}<extra></extra>'
+        });
+    }
+
+    // Add forecast line
+    if (forecastData && forecastData.forecast && mode !== 'savings') {
+        const f = forecastData.forecast;
+        dataPlot.push({
+            x: f.map(t => months[t.month - 1] + ' ' + (t.year % 100)),
+            y: f.map(t => t.predicted),
+            name: 'AI Forecast',
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#7C3AED', width: 3, dash: 'dot', shape: 'spline' },
+            marker: { color: '#7C3AED', size: 8, symbol: 'diamond', line: { color: '#fff', width: 2 } },
+            hovertemplate: '<b>%{x}</b><br>Forecast: ' + userCurrency + '%{y:,.0f}<extra></extra>'
+        });
+    }
+
+    const layout = {
+        height: 340,
+        margin: { t: 20, b: 40, l: 60, r: 20 },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { color: textColor, family: 'Inter', size: 12 },
+        showlegend: true,
+        legend: { orientation: 'h', y: 1.12, x: 0.5, xanchor: 'center', font: { size: 12 } },
+        xaxis: { showgrid: false, zeroline: false, tickfont: { size: 11 } },
+        yaxis: { gridcolor: gridColor, zeroline: true, zerolinecolor: '#E2E8F0', tickprefix: userCurrency, tickfont: { size: 11 } },
+        hovermode: 'x unified',
+        hoverlabel: { bgcolor: '#1E293B', font: { color: '#fff', size: 13, family: 'Inter' }, bordercolor: 'transparent' }
+    };
+
+    Plotly.newPlot('spendingTrendsChart', dataPlot, layout, {
+        displayModeBar: false,
+        responsive: true
+    });
+
+    // Animate on render
+    Plotly.animate('spendingTrendsChart', { data: dataPlot }, {
+        transition: { duration: 600, easing: 'cubic-in-out' },
+        frame: { duration: 600 }
+    });
+}
+
+function switchTrendsMode(mode) {
+    document.querySelectorAll('#trendsToggle .pt-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    renderTrendsChart(mode);
+}
+
+// ===== Enhanced Heatmap — GitHub-style Grid =====
+function renderHeatmapGrid(heatmapData) {
+    const container = document.getElementById('spendingHeatmapChart');
+    if (!heatmapData || !heatmapData.grid) {
+        container.innerHTML = '<p class="empty-state">No spending data for heatmap</p>';
+        return;
+    }
+
+    const { grid, week_labels, days } = heatmapData;
+    // Find max value for color scaling
+    let maxVal = 0;
+    grid.forEach(week => week.forEach(val => { if (val > maxVal) maxVal = val; }));
+    if (maxVal === 0) maxVal = 1;
+
+    // Color function: 0 = #F1F5F9, max = #FF3459, mid intensity colors
+    function getColor(val) {
+        if (val === 0) return '#F1F5F9';
+        const ratio = Math.min(val / maxVal, 1);
+        if (ratio < 0.25) return '#FFE0E6';
+        if (ratio < 0.5) return '#FFB1C1';
+        if (ratio < 0.75) return '#FF6B8A';
+        return '#FF3459';
+    }
+
+    function getLevel(val) {
+        if (val === 0) return 'No spending';
+        const ratio = Math.min(val / maxVal, 1);
+        if (ratio < 0.25) return 'Low';
+        if (ratio < 0.5) return 'Moderate';
+        if (ratio < 0.75) return 'High';
+        return 'Very High';
+    }
+
+    let html = '<div class="heatmap-grid-container">';
+
+    // Day labels column
+    html += '<div class="heatmap-day-labels">';
+    html += '<div class="heatmap-day-label" style="height:16px;"></div>'; // spacer for week labels row
+    days.forEach(d => {
+        html += `<div class="heatmap-day-label">${d}</div>`;
+    });
+    html += '</div>';
+
+    // Weeks columns
+    html += '<div class="heatmap-weeks">';
+    // Week labels row
+    html += '<div class="heatmap-week-labels">';
+    grid.forEach((_, wi) => {
+        const label = wi % 2 === 0 ? week_labels[wi] : '';
+        html += `<div class="heatmap-week-label">${label}</div>`;
+    });
+    html += '</div>';
+
+    // Grid cells (7 rows x 12 cols)
+    for (let d = 0; d < 7; d++) {
+        html += '<div class="heatmap-row">';
+        for (let w = 0; w < grid.length; w++) {
+            const val = grid[w][d];
+            const color = getColor(val);
+            const level = getLevel(val);
+            const tooltip = val > 0 ? `${days[d]}, ${week_labels[w]}: ${userCurrency}${val.toLocaleString()} (${level})` : `${days[d]}, ${week_labels[w]}: No spending`;
+            html += `<div class="heatmap-cell" style="background:${color};" title="${tooltip}" data-val="${val}"></div>`;
+        }
+        html += '</div>';
+    }
+    html += '</div>'; // .heatmap-weeks
+
+    // Legend
+    html += '<div class="heatmap-legend">';
+    html += '<span class="heatmap-legend-label">Less</span>';
+    ['#F1F5F9', '#FFE0E6', '#FFB1C1', '#FF6B8A', '#FF3459'].forEach(c => {
+        html += `<div class="heatmap-legend-cell" style="background:${c};"></div>`;
+    });
+    html += '<span class="heatmap-legend-label">More</span>';
+    html += '</div>';
+
+    html += '</div>'; // .heatmap-grid-container
+    container.innerHTML = html;
+
+    // Add hover animation
+    container.querySelectorAll('.heatmap-cell').forEach(cell => {
+        cell.addEventListener('mouseenter', () => {
+            cell.style.transform = 'scale(1.3)';
+            cell.style.zIndex = '10';
+            cell.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        });
+        cell.addEventListener('mouseleave', () => {
+            cell.style.transform = 'scale(1)';
+            cell.style.zIndex = '';
+            cell.style.boxShadow = '';
+        });
+    });
 }
 
 // ===== Pie Chart Rendering & Toggle =====
@@ -559,19 +692,106 @@ async function loadForecast() {
     const data = await api('/api/forecast');
     const div = document.getElementById('forecastContent');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const analysis = data.analysis || {};
+    const insights = data.insights || [];
+    const recommendations = data.recommendations || [];
 
-    let html = `<div class="forecast-card"><div class="fc-method">Forecast Method: ${data.method === 'prophet' ? 'Prophet AI' : 'Moving Average'} (${data.confidence} confidence)</div>`;
-    if (data.forecast && data.forecast.length > 0) {
-        html += data.forecast.map(f => `
-            <div class="fc-month">
-                <span class="fc-month-name">${months[f.month - 1]} ${f.year}</span>
-                <div><span class="fc-predicted">${formatMoney(f.predicted)}</span><br><span class="fc-range">${formatMoney(f.lower)} — ${formatMoney(f.upper)}</span></div>
+    let html = '';
+
+    // === Analysis Summary ===
+    if (analysis.trend) {
+        html += `
+        <div class="fc-analysis">
+            <div class="fc-analysis-header">
+                <span class="fc-analysis-icon">${analysis.trend_icon}</span>
+                <span class="fc-analysis-title">Spending Analysis</span>
+                <span class="fc-confidence-badge fc-conf-${data.confidence}">${data.confidence} confidence</span>
             </div>
-        `).join('');
+            <div class="fc-stats-grid">
+                <div class="fc-stat">
+                    <div class="fc-stat-label">Trend</div>
+                    <div class="fc-stat-value fc-trend-${analysis.trend}">${analysis.trend_icon} ${analysis.trend.charAt(0).toUpperCase() + analysis.trend.slice(1)}</div>
+                </div>
+                <div class="fc-stat">
+                    <div class="fc-stat-label">MoM Change</div>
+                    <div class="fc-stat-value ${analysis.change_pct >= 0 ? 'fc-neg' : 'fc-pos'}">${analysis.change_pct >= 0 ? '+' : ''}${analysis.change_pct}%</div>
+                </div>
+                <div class="fc-stat">
+                    <div class="fc-stat-label">Avg Monthly</div>
+                    <div class="fc-stat-value">${formatMoney(analysis.avg_monthly)}</div>
+                </div>
+                <div class="fc-stat">
+                    <div class="fc-stat-label">Volatility</div>
+                    <div class="fc-stat-value fc-vol-${analysis.volatility.toLowerCase()}">${analysis.volatility}</div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // === Monthly Forecasts ===
+    html += `<div class="fc-card">
+        <div class="fc-method">📊 ${data.method === 'prophet' ? 'Prophet AI' : 'Moving Average'} Forecast — Next ${data.forecast?.length || 3} Months</div>`;
+
+    if (data.forecast && data.forecast.length > 0) {
+        const maxUpper = Math.max(...data.forecast.map(f => f.upper));
+        html += data.forecast.map(f => {
+            const pctPred = (f.predicted / maxUpper * 100).toFixed(1);
+            const pctLower = (f.lower / maxUpper * 100).toFixed(1);
+            const pctUpper = (f.upper / maxUpper * 100).toFixed(1);
+            return `
+            <div class="fc-month-row">
+                <div class="fc-month-info">
+                    <span class="fc-month-name">${months[f.month - 1]} ${f.year}</span>
+                    <span class="fc-predicted">${formatMoney(f.predicted)}</span>
+                </div>
+                <div class="fc-bar-container">
+                    <div class="fc-bar-range" style="left:${pctLower}%;width:${pctUpper - pctLower}%"></div>
+                    <div class="fc-bar-predicted" style="left:${pctPred}%"></div>
+                </div>
+                <div class="fc-range-label">${formatMoney(f.lower)} — ${formatMoney(f.upper)}</div>
+            </div>`;
+        }).join('');
     } else {
         html += '<p class="empty-state">Not enough data for forecasting yet.</p>';
     }
     html += '</div>';
+
+    // === Insights ===
+    if (insights.length > 0) {
+        html += `<div class="fc-insights">
+            <h4 class="fc-section-title">🔍 Key Insights</h4>
+            <div class="fc-insight-grid">
+                ${insights.map(i => `
+                    <div class="fc-insight-card fc-insight-${i.type}">
+                        <div class="fc-insight-icon">${i.icon}</div>
+                        <div class="fc-insight-content">
+                            <div class="fc-insight-title">${i.title}</div>
+                            <div class="fc-insight-text">${i.text}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+    }
+
+    // === Recommendations ===
+    if (recommendations.length > 0) {
+        html += `<div class="fc-recommendations">
+            <h4 class="fc-section-title">💡 What You Should Do</h4>
+            <div class="fc-rec-list">
+                ${recommendations.map(r => `
+                    <div class="fc-rec-item">
+                        <span class="fc-rec-icon">${r.icon}</span>
+                        <div class="fc-rec-body">
+                            <div class="fc-rec-title">${r.title}</div>
+                            <div class="fc-rec-text">${r.text}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+    }
+
     div.innerHTML = html;
 }
 
@@ -579,7 +799,16 @@ async function loadForecast() {
 async function loadHealthScore() {
     const data = await api('/api/health-score');
     const div = document.getElementById('healthDashboard');
-    const statusClass = data.score >= 80 ? 'excellent' : data.score >= 60 ? 'good' : 'fair';
+    const statusClass = data.score >= 80 ? 'excellent' : data.score >= 60 ? 'good' : data.score >= 40 ? 'fair' : 'poor';
+
+    // Dynamic gradient: green for high, red for low
+    const gradStart = data.score >= 70 ? '#16a34a' : data.score >= 50 ? '#f59e0b' : '#FF3459';
+    const gradEnd = data.score >= 70 ? '#22d3ee' : data.score >= 50 ? '#FF8A00' : '#FF5A78';
+
+    // Component data
+    const comps = data.components || {};
+    const recs = data.recommendations || [];
+    const fin = data.financials || {};
 
     div.innerHTML = `
         <div class="hd-score-container">
@@ -592,8 +821,8 @@ async function loadHealthScore() {
                             id="hdCircle" style="transition: stroke-dashoffset 2s ease-out;" />
                         <defs>
                             <linearGradient id="hdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#FF3459" />
-                                <stop offset="100%" stop-color="#FF5A78" />
+                                <stop offset="0%" stop-color="${gradStart}" />
+                                <stop offset="100%" stop-color="${gradEnd}" />
                             </linearGradient>
                         </defs>
                     </svg>
@@ -603,14 +832,72 @@ async function loadHealthScore() {
                 </div>
                 <div class="hd-status ${statusClass}">${data.status}</div>
                 <div class="hd-tip">💡 ${data.tip}</div>
+
+                <!-- Financial Summary -->
+                <div class="hd-fin-summary">
+                    <div class="hd-fin-item income">
+                        <span class="hd-fin-label">Income</span>
+                        <span class="hd-fin-value">${formatMoney(fin.income || 0)}</span>
+                    </div>
+                    <div class="hd-fin-item expense">
+                        <span class="hd-fin-label">Expenses</span>
+                        <span class="hd-fin-value">${formatMoney(fin.expenses || 0)}</span>
+                    </div>
+                    <div class="hd-fin-item savings">
+                        <span class="hd-fin-label">Savings</span>
+                        <span class="hd-fin-value">${formatMoney(fin.savings || 0)}</span>
+                    </div>
+                </div>
             </div>
-            <div class="hd-metrics">
-                <div class="hd-metric"><div class="hd-metric-label">Spending Ratio</div><div class="hd-metric-value">${data.details.spending_ratio}%</div></div>
-                <div class="hd-metric"><div class="hd-metric-label">Savings Rate</div><div class="hd-metric-value">${data.details.savings_rate}%</div></div>
-                <div class="hd-metric"><div class="hd-metric-label">Budget Adherence</div><div class="hd-metric-value">${data.details.budget_adherence}%</div></div>
-                <div class="hd-metric"><div class="hd-metric-label">Risk Level</div><div class="hd-metric-value">${data.details.risk_level}</div></div>
+
+            <div class="hd-right-panel">
+                <!-- Component Breakdown -->
+                <div class="hd-components">
+                    <h4 class="hd-section-title">Score Breakdown</h4>
+                    ${_renderComponent('💸', 'Spending', comps.spending)}
+                    ${_renderComponent('💰', 'Savings', comps.savings)}
+                    ${_renderComponent('📋', 'Budget', comps.budget)}
+                    ${_renderComponent('🎯', 'Goals', comps.goals)}
+                </div>
+
+                <!-- Quick Metrics -->
+                <div class="hd-metrics">
+                    <div class="hd-metric">
+                        <div class="hd-metric-label">Spending Ratio</div>
+                        <div class="hd-metric-value">${data.details.spending_ratio}%</div>
+                    </div>
+                    <div class="hd-metric">
+                        <div class="hd-metric-label">Savings Rate</div>
+                        <div class="hd-metric-value">${data.details.savings_rate}%</div>
+                    </div>
+                    <div class="hd-metric">
+                        <div class="hd-metric-label">Budget Adherence</div>
+                        <div class="hd-metric-value">${data.details.budget_adherence}%</div>
+                    </div>
+                    <div class="hd-metric">
+                        <div class="hd-metric-label">Risk Level</div>
+                        <div class="hd-metric-value hd-risk-${data.details.risk_level.toLowerCase()}">${data.details.risk_level}</div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Recommendations -->
+        ${recs.length > 0 ? `
+        <div class="hd-recommendations">
+            <h4 class="hd-section-title" style="margin-top:24px;">💡 Recommendations</h4>
+            <div class="hd-rec-grid">
+                ${recs.map(r => `
+                    <div class="hd-rec-card hd-rec-${r.type}">
+                        <div class="hd-rec-icon">${r.icon}</div>
+                        <div class="hd-rec-content">
+                            <div class="hd-rec-title">${r.title}</div>
+                            <div class="hd-rec-text">${r.text}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>` : ''}
     `;
 
     // Animate score and ring
@@ -624,7 +911,6 @@ async function loadHealthScore() {
         circle.style.strokeDashoffset = offset;
 
         // Counter animation
-        let current = 0;
         const duration = 2000;
         const start = Date.now();
         const step = () => {
@@ -634,7 +920,30 @@ async function loadHealthScore() {
             if (progress < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
+
+        // Animate component bars
+        document.querySelectorAll('.hd-comp-bar-fill').forEach(bar => {
+            const pct = bar.dataset.pct;
+            setTimeout(() => { bar.style.width = pct + '%'; }, 300);
+        });
     }, 100);
+}
+
+function _renderComponent(icon, label, comp) {
+    if (!comp) return '';
+    const pct = Math.round(comp.score / comp.max * 100);
+    const ratingClass = comp.rating === 'Excellent' ? 'success' : comp.rating === 'Good' ? 'good' : comp.rating === 'Fair' ? 'fair' : 'warning';
+    return `
+        <div class="hd-comp-row">
+            <div class="hd-comp-info">
+                <span class="hd-comp-icon">${icon}</span>
+                <span class="hd-comp-label">${label}</span>
+                <span class="hd-comp-score">${comp.score}/${comp.max}</span>
+                <span class="hd-comp-badge hd-badge-${ratingClass}">${comp.rating}</span>
+            </div>
+            <div class="hd-comp-bar"><div class="hd-comp-bar-fill hd-bar-${ratingClass}" data-pct="${pct}" style="width:0"></div></div>
+        </div>
+    `;
 }
 
 // ===== Modals =====

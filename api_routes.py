@@ -389,20 +389,31 @@ def get_summary():
 @api_bp.route('/analytics/trends', methods=['GET'])
 @login_required
 def get_trends():
-    """Get monthly spending trends for the past 12 months."""
+    """Get monthly spending & income trends for the past 12 months."""
     now = datetime.utcnow()
     trends = []
 
     for i in range(11, -1, -1):
         d = now - timedelta(days=i * 30)
         m, y = d.month, d.year
-        total = db.session.query(func.sum(Transaction.amount)).filter(
+        expense = db.session.query(func.sum(Transaction.amount)).filter(
             Transaction.user_id == current_user.id,
             Transaction.transaction_type == 'expense',
             extract('month', Transaction.date) == m,
             extract('year', Transaction.date) == y
         ).scalar() or 0
-        trends.append({'month': m, 'year': y, 'total': round(total, 2)})
+        income = db.session.query(func.sum(Transaction.amount)).filter(
+            Transaction.user_id == current_user.id,
+            Transaction.transaction_type == 'income',
+            extract('month', Transaction.date) == m,
+            extract('year', Transaction.date) == y
+        ).scalar() or 0
+        trends.append({
+            'month': m, 'year': y,
+            'total': round(expense, 2),
+            'income': round(income, 2),
+            'savings': round(income - expense, 2)
+        })
 
     return jsonify(trends)
 
@@ -419,19 +430,52 @@ def get_analytics_forecast():
 @api_bp.route('/analytics/heatmap', methods=['GET'])
 @login_required
 def get_heatmap():
-    """Get spending intensity by day of week and hour (or just day)."""
-    # Simply day of week for now
+    """Get 12-week daily spending grid for a GitHub-style heatmap."""
+    now = datetime.utcnow()
+    start = now - timedelta(weeks=12)
+
     data = db.session.query(
-        extract('dow', Transaction.date).label('dow'),
+        func.date(Transaction.date).label('day'),
         func.sum(Transaction.amount).label('total')
     ).filter(
         Transaction.user_id == current_user.id,
-        Transaction.transaction_type == 'expense'
-    ).group_by('dow').all()
+        Transaction.transaction_type == 'expense',
+        Transaction.date >= start
+    ).group_by(func.date(Transaction.date)).all()
 
-    #dow: 0=Sunday, 6=Saturday
-    heatmap = {int(d.dow): round(d.total, 2) for d in data}
-    return jsonify(heatmap)
+    # Build a dict: date_str -> total
+    day_map = {}
+    for d in data:
+        day_str = str(d.day)
+        day_map[day_str] = round(d.total, 2)
+
+    # Build 12-week grid (rows = days Mon-Sun, cols = weeks)
+    # Find the Monday of the start week
+    start_monday = start - timedelta(days=start.weekday())
+    weeks = []
+    week_labels = []
+    for w in range(12):
+        week_start = start_monday + timedelta(weeks=w)
+        week_labels.append(week_start.strftime('%b %d'))
+        week_data = []
+        for d in range(7):  # Mon=0 .. Sun=6
+            day = week_start + timedelta(days=d)
+            day_str = day.strftime('%Y-%m-%d')
+            week_data.append(day_map.get(day_str, 0))
+        weeks.append(week_data)
+
+    # Also return simple day-of-week totals for backwards compatibility
+    dow_totals = [0] * 7
+    for w in weeks:
+        for i, v in enumerate(w):
+            dow_totals[i] += v
+
+    return jsonify({
+        'grid': weeks,
+        'week_labels': week_labels,
+        'days': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        'dow_totals': dow_totals
+    })
 
 
 # ==================== AI CHAT ENDPOINT ====================

@@ -1,4 +1,4 @@
-﻿@import url('variables.css');
+@import url('variables.css');
 
 /* ===== Dashboard Styles — Professional Light Theme ===== */
 *,
@@ -220,6 +220,28 @@ body {
     color: #9ca3af;
     padding: 40px;
     font-size: 0.95rem;
+}
+
+/* Hide placeholder once Plotly renders inside */
+.dc-body {
+    padding: 18px 22px;
+    min-height: 200px;
+    position: relative;
+}
+
+.dc-body > .js-plotly-plot,
+.dc-body > .heatmap-grid-container {
+    position: relative;
+    z-index: 1;
+}
+
+.dc-body > .empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
 }
 
 /* Summary Cards */
@@ -1150,7 +1172,7 @@ body {
 }
 
 /* Forecast */
-.forecast-card {
+.forecast-card, .fc-card {
     background: white;
     border: 1px solid var(--border);
     border-radius: 16px;
@@ -1193,6 +1215,344 @@ body {
 .fc-range {
     font-size: 0.75rem;
     color: #9ca3af;
+}
+
+/* Forecast Analysis */
+.fc-analysis {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.fc-analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.fc-analysis-icon { font-size: 1.4rem; }
+
+.fc-analysis-title {
+    font-weight: 700;
+    font-size: 1rem;
+    flex: 1;
+}
+
+.fc-confidence-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 50px;
+    letter-spacing: 0.5px;
+}
+
+.fc-conf-high { background: #dcfce7; color: #16a34a; }
+.fc-conf-medium { background: #fef3c7; color: #d97706; }
+.fc-conf-low { background: #fee2e2; color: #dc2626; }
+
+.fc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.fc-stat {
+    background: var(--bg-alt);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+
+.fc-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.fc-stat-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.fc-trend-increasing { color: #dc2626; }
+.fc-trend-decreasing { color: #16a34a; }
+.fc-trend-stable { color: #2563eb; }
+.fc-neg { color: #dc2626; }
+.fc-pos { color: #16a34a; }
+.fc-vol-low { color: #16a34a; }
+.fc-vol-medium { color: #d97706; }
+.fc-vol-high { color: #dc2626; }
+
+/* Forecast Monthly Rows */
+.fc-month-row {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.fc-month-row:last-of-type { border: none; }
+
+.fc-month-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.fc-bar-container {
+    position: relative;
+    height: 8px;
+    background: #F1F5F9;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.fc-bar-range {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 52, 89, 0.15), rgba(255, 52, 89, 0.3));
+    border-radius: 4px;
+}
+
+.fc-bar-predicted {
+    position: absolute;
+    top: -2px;
+    width: 4px;
+    height: 12px;
+    background: #FF3459;
+    border-radius: 2px;
+    transform: translateX(-50%);
+}
+
+.fc-range-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-align: right;
+}
+
+/* Forecast Insights & Recommendations */
+.fc-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.fc-insights, .fc-recommendations {
+    margin-top: 16px;
+}
+
+.fc-insight-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.fc-insight-card {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: white;
+    transition: all 0.2s;
+}
+
+.fc-insight-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.fc-insight-warning { border-left: 3px solid #dc2626; }
+.fc-insight-success { border-left: 3px solid #16a34a; }
+.fc-insight-tip { border-left: 3px solid #2563eb; }
+
+.fc-insight-icon { font-size: 1.3rem; flex-shrink: 0; }
+.fc-insight-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+.fc-insight-text { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+
+.fc-rec-list {
+    display: grid;
+    gap: 10px;
+}
+
+.fc-rec-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--bg-alt);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+
+.fc-rec-item:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.fc-rec-icon { font-size: 1.3rem; flex-shrink: 0; }
+.fc-rec-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+.fc-rec-text { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+
+/* ===== Enhanced Health Score ===== */
+.hd-fin-summary {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.hd-fin-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+    background: var(--bg-alt);
+}
+
+.hd-fin-item.income { border-bottom: 2px solid #16a34a; }
+.hd-fin-item.expense { border-bottom: 2px solid #dc2626; }
+.hd-fin-item.savings { border-bottom: 2px solid #2563eb; }
+
+.hd-fin-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.hd-fin-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.hd-right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hd-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+/* Component Breakdown */
+.hd-components {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.hd-comp-row {
+    margin-bottom: 14px;
+}
+
+.hd-comp-row:last-child { margin-bottom: 0; }
+
+.hd-comp-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.hd-comp-icon { font-size: 1rem; }
+.hd-comp-label { font-weight: 600; font-size: 0.85rem; flex: 1; }
+.hd-comp-score { font-size: 0.78rem; font-weight: 600; color: #94a3b8; }
+
+.hd-comp-badge {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 50px;
+    text-transform: uppercase;
+}
+
+.hd-badge-success { background: #dcfce7; color: #16a34a; }
+.hd-badge-good { background: #dbeafe; color: #2563eb; }
+.hd-badge-fair { background: #fef3c7; color: #d97706; }
+.hd-badge-warning { background: #fee2e2; color: #dc2626; }
+
+.hd-comp-bar {
+    height: 6px;
+    background: #F1F5F9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.hd-comp-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hd-bar-success { background: linear-gradient(90deg, #16a34a, #22d3ee); }
+.hd-bar-good { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+.hd-bar-fair { background: linear-gradient(90deg, #d97706, #fbbf24); }
+.hd-bar-warning { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+/* Risk Level Colors */
+.hd-risk-low { color: #16a34a; }
+.hd-risk-medium { color: #d97706; }
+.hd-risk-high { color: #dc2626; }
+
+/* Health Recommendations */
+.hd-rec-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.hd-rec-card {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: white;
+    transition: all 0.2s;
+}
+
+.hd-rec-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.hd-rec-success { border-left: 3px solid #16a34a; }
+.hd-rec-warning { border-left: 3px solid #dc2626; }
+.hd-rec-tip { border-left: 3px solid #2563eb; }
+
+.hd-rec-icon { font-size: 1.3rem; flex-shrink: 0; }
+.hd-rec-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+.hd-rec-text { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+
+.hd-status.poor {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Responsive Forecast */
+@media (max-width: 768px) {
+    .fc-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* Modals */
@@ -1642,4 +2002,134 @@ body {
 :root {
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== GitHub-style Heatmap Grid ===== */
+.heatmap-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.heatmap-grid-container > div:first-child {
+    display: flex;
+    gap: 6px;
+}
+
+.heatmap-day-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 36px;
+    flex-shrink: 0;
+}
+
+.heatmap-day-label {
+    height: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.heatmap-weeks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.heatmap-week-labels {
+    display: flex;
+    gap: 3px;
+    height: 16px;
+}
+
+.heatmap-week-label {
+    flex: 1;
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.heatmap-row {
+    display: flex;
+    gap: 3px;
+}
+
+.heatmap-cell {
+    flex: 1;
+    aspect-ratio: 1;
+    min-width: 16px;
+    max-width: 40px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.heatmap-cell:hover {
+    outline: 2px solid #0F172A;
+    outline-offset: 1px;
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-right: 4px;
+}
+
+.heatmap-legend-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.heatmap-legend-cell {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+
+/* Responsive heatmap */
+@media (max-width: 768px) {
+    .heatmap-cell {
+        min-width: 12px;
+        border-radius: 3px;
+    }
+
+    .heatmap-day-label {
+        font-size: 0.6rem;
+        height: 16px;
+    }
+
+    .heatmap-week-label {
+        font-size: 0.55rem;
+    }
+
+    .heatmap-row {
+        gap: 2px;
+    }
+
+    .heatmap-week-labels {
+        gap: 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .heatmap-cell {
+        min-width: 8px;
+        border-radius: 2px;
+    }
 }
